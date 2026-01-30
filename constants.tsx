@@ -41,7 +41,7 @@ export const CELEBRITIES: Celebrity[] = [
     category: 'Business',
     bio: 'Legendary industrialist and philanthropist. The most respected voice in the Indian corporate world.',
     rating: 5.0,
-    imageUrl: 'ESHA DELO.jpeg',
+    imageUrl: 'ESHA DEOL.jpeg',
     priceRange: 'Selective',
     followers: '2.5 Million +',
     expertise: ['Philanthropy', 'Corporate Leadership', 'Ethical Business', 'Actor' ]
