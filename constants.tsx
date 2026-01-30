@@ -41,54 +41,54 @@ export const CELEBRITIES: Celebrity[] = [
     category: 'Business',
     bio: 'Legendary industrialist and philanthropist. The most respected voice in the Indian corporate world.',
     rating: 5.0,
-    imageUrl: 'https://assets.vogue.in/photos/5df9ba277c02da0008038eb6/master/w_800,c_limit/2006-1-Deepika-Padukone-makeup-hairstyle-auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'ESHA DELO.jpeg',
     priceRange: 'Selective',
-    followers: '12M+',
-    expertise: ['Philanthropy', 'Corporate Leadership', 'Ethical Business']
+    followers: '2.5 Million +',
+    expertise: ['Philanthropy', 'Corporate Leadership', 'Ethical Business', 'Actor' ]
   },
   {
     id: '5',
-    name: 'A.R. Rahman',
-    category: 'Musicians',
-    bio: 'Oscar-winning composer and the "Mozart of Madras". A musical genius with global appeal.',
+    name: 'ANCHOR MAYURI',
+    category: 'Anchor',
+    bio: 'null',
     rating: 4.9,
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'ANCHOR MAYURI.jpeg',
     priceRange: 'Contact us',
     followers: '25M+',
-    expertise: ['Musical Compositions', 'Global Concerts', 'Tech Partnerships']
+    expertise: ['Anchor', 'Global Concerts']
   },
   {
     id: '6',
-    name: 'CarryMinati',
+    name: 'Soniya Sharma',
     category: 'Digital Influencers',
-    bio: 'Ajey Nagar, India\'s biggest individual YouTuber, known for his roasting and gaming content.',
+    bio: 'Soniya sharma, Iindividual instagram Fashion creator, known for his Instagram content.',
     rating: 4.7,
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'SONIYA SHARMA.jpeg',
     priceRange: 'Contact us',
-    followers: '40M+',
+    followers: '50k +',
     expertise: ['Gen-Z Marketing', 'Gaming Launches', 'Viral Content']
   },
   {
     id: '7',
-    name: 'Alia Bhatt',
-    category: 'Bollywood',
-    bio: 'Versatile actress and producer. One of the most bankable and influential faces in modern cinema.',
+    name: 'Anchor Naaz',
+    category: 'Anchor',
+    bio: 'null.',
     rating: 4.8,
-    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'ANCHOR NAAZ.jpeg',
     priceRange: 'Contact us',
-    followers: '82M+',
-    expertise: ['Lifestyle Brands', 'Sustainability', 'Youth Appeal']
+    followers: 'null',
+    expertise: ['concert', 'Corporate event']
   },
   {
     id: '8',
-    name: 'Hardik Pandya',
-    category: 'Cricketers',
+    name: 'Heer khamboj',
+    category: 'Fashion',
     bio: 'Dynamic all-rounder and a style icon. Known for his high-octane performance and flamboyant lifestyle.',
     rating: 4.6,
-    imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'HEER KHAMBOJ.jpeg',
     priceRange: 'Contact us',
-    followers: '28M+',
-    expertise: ['Sports Gear', 'Men\'s Grooming', 'Style Statements']
+    followers: '52k +',
+    expertise: ['Sports Gear', 'WoMen\'s Grooming', 'Style Statements' ' Fashionn' ]
   },
   {
     id: '9',
@@ -143,4 +143,5 @@ export const CATEGORIES: Category[] = [
   'Musicians',
   'Fashion',
   'Business'
+  'Anchor'
 ];
