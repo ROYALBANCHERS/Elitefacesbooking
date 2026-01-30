@@ -26,7 +26,7 @@ const App: React.FC = () => {
         <div className="container mx-auto flex justify-between items-center">
           <a href="#" className="flex items-center space-x-3 group logo-glow transition-all">
             <img 
-              src="logo.png" 
+              src="LOGO.PNG" 
               alt="EliteFaces Logo" 
               className="h-12 w-12 rounded-full object-cover border border-white/10"
             />
@@ -50,13 +50,13 @@ const App: React.FC = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-transparent to-transparent"></div>
           {/* Subtle logo watermark background */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] scale-150 pointer-events-none">
-            <img src="logo.png" alt="" className="w-[800px] grayscale brightness-200" />
+            <img src="LOGO.png" alt="" className="w-[800px] grayscale brightness-200" />
           </div>
         </div>
         
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="flex justify-center mb-8 animate-in fade-in zoom-in duration-1000">
-             <img src="logo.png" alt="EliteFaces" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
+             <img src="LOGO.PNG" alt="EliteFaces" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
           </div>
           <span className="text-yellow-500 font-bold tracking-[0.5em] uppercase text-sm mb-6 block animate-in fade-in slide-in-from-top-4 duration-1000">India's Leading Talent Agency</span>
           <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight">
@@ -161,7 +161,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
           <div className="md:col-span-2">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <img src="logo.png" alt="EliteFaces" className="h-16 w-16 rounded-full border border-white/10" />
+                <img src="LOGO.PNG" alt="EliteFaces" className="h-16 w-16 rounded-full border border-white/10" />
                 <span className="text-3xl font-black gold-gradient serif italic block">EliteFacesBooking</span>
             </div>
             <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
@@ -196,7 +196,7 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/5 text-center text-slate-500 text-xs tracking-widest uppercase">
-          © {new Date().getFullYear()} EliteFacesBooking Management Pvt. Ltd. All rights reserved.
+          © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
         </div>
       </footer>
 
