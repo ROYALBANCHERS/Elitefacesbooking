@@ -8,9 +8,9 @@ export const CELEBRITIES: Celebrity[] = [
     category: 'Bollywood',
     bio: 'The "Star of Bollywood", a global icon known for his charisma and unparalleled stardom across the globe.',
     rating: 5.0,
-    imageUrl: 'https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/TUSHAR KAPOOR.jpeg',
     priceRange: 'Contact us',
-    followers: '8 Millio +',
+    followers: '8 Million +',
     expertise: ['Brand Endorsement', 'Keynote Speaking', 'Grand Appearances']
   },
   {
