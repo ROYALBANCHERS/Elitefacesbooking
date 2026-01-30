@@ -142,6 +142,6 @@ export const CATEGORIES: Category[] = [
   'Digital Influencers',
   'Musicians',
   'Fashion',
-  'Business'
+  'Business',
   'Anchor'
 ];
