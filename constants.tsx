@@ -4,13 +4,13 @@ import { Celebrity, Category } from './types';
 export const CELEBRITIES: Celebrity[] = [
   {
     id: '1',
-    name: 'Shah Rukh Khan',
+    name: 'TUSSHAR KAPOOR',
     category: 'Bollywood',
-    bio: 'The "King of Bollywood", a global icon known for his charisma and unparalleled stardom across the globe.',
+    bio: 'The "Star of Bollywood", a global icon known for his charisma and unparalleled stardom across the globe.',
     rating: 5.0,
     imageUrl: 'https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹5 Cr+',
-    followers: '46M+',
+    priceRange: 'Contact us',
+    followers: '8 Millio +',
     expertise: ['Brand Endorsement', 'Keynote Speaking', 'Grand Appearances']
   },
   {
@@ -20,7 +20,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Former Indian Captain and one of the greatest batsmen of all time. A fitness icon and marketing powerhouse.',
     rating: 5.0,
     imageUrl: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹4 Cr+',
+    priceRange: 'Contact us',
     followers: '260M+',
     expertise: ['Sports Branding', 'Fitness Apps', 'Youth Motivation']
   },
@@ -31,7 +31,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'One of the highest-paid actresses in India, known for her elegance and powerful performances.',
     rating: 4.9,
     imageUrl: 'https://assets.vogue.in/photos/5df9ba277c02da0008038eb6/master/w_800,c_limit/2006-1-Deepika-Padukone-makeup-hairstyle-auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹3.5 Cr+',
+    priceRange: 'Contact us',
     followers: '75M+',
     expertise: ['Luxury Fashion', 'Mental Health Advocacy', 'Global Events']
   },
@@ -53,7 +53,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Oscar-winning composer and the "Mozart of Madras". A musical genius with global appeal.',
     rating: 4.9,
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹2 Cr+',
+    priceRange: 'Contact us',
     followers: '25M+',
     expertise: ['Musical Compositions', 'Global Concerts', 'Tech Partnerships']
   },
@@ -64,7 +64,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Ajey Nagar, India\'s biggest individual YouTuber, known for his roasting and gaming content.',
     rating: 4.7,
     imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹80L - ₹1.5 Cr',
+    priceRange: 'Contact us',
     followers: '40M+',
     expertise: ['Gen-Z Marketing', 'Gaming Launches', 'Viral Content']
   },
@@ -75,7 +75,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Versatile actress and producer. One of the most bankable and influential faces in modern cinema.',
     rating: 4.8,
     imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹2.5 Cr+',
+    priceRange: 'Contact us',
     followers: '82M+',
     expertise: ['Lifestyle Brands', 'Sustainability', 'Youth Appeal']
   },
@@ -86,7 +86,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Dynamic all-rounder and a style icon. Known for his high-octane performance and flamboyant lifestyle.',
     rating: 4.6,
     imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹1.5 Cr+',
+    priceRange: 'Contact us',
     followers: '28M+',
     expertise: ['Sports Gear', 'Men\'s Grooming', 'Style Statements']
   },
@@ -97,7 +97,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'The queen of melody. One of the most honored and loved playback singers in the country.',
     rating: 4.9,
     imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹1 Cr+',
+    priceRange: 'Contact us',
     followers: '28M+',
     expertise: ['Singing Appearances', 'Jewelry Brands', 'Traditional Wear']
   },
@@ -108,7 +108,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'The "Sakht Launda" of Indian stand-up comedy. A master storyteller with a massive loyal following.',
     rating: 4.8,
     imageUrl: 'https://images.unsplash.com/photo-1506803682981-6e718a9dd3ee?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹40L - ₹80L',
+    priceRange: 'Contact us',
     followers: '6M+',
     expertise: ['Storytelling Ads', 'University Events', 'Tech Reviews']
   },
@@ -119,7 +119,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Olympic Gold Medalist and a national hero. The face of discipline, hard work, and athletic excellence.',
     rating: 4.9,
     imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹1 Cr - ₹2 Cr',
+    priceRange: 'Contact us',
     followers: '9M+',
     expertise: ['Institutional Ads', 'Sports Gear', 'Government Campaigns']
   },
@@ -130,7 +130,7 @@ export const CELEBRITIES: Celebrity[] = [
     bio: 'Known for his high energy and versatile acting. The ultimate fashion trailblazer in the Indian industry.',
     rating: 4.8,
     imageUrl: 'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&q=80&w=800',
-    priceRange: '₹2.5 Cr+',
+    priceRange: 'Contact us',
     followers: '45M+',
     expertise: ['Fashion Retail', 'High Energy Ads', 'Product Launches']
   }
