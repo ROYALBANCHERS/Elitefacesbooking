@@ -88,7 +88,7 @@ export const CELEBRITIES: Celebrity[] = [
     imageUrl: 'HEER KHAMBOJ.jpeg',
     priceRange: 'Contact us',
     followers: '52k+',
-    expertise: ['Sports Gear', 'WoMen\'s Grooming', 'Style Statements' ' Fashion' ]
+    expertise: ['Sports Gear', 'WoMen\'s Grooming', 'Style Statements', 'Fashion' ]
   },
   {
     id: '9',
