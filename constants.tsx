@@ -15,14 +15,14 @@ export const CELEBRITIES: Celebrity[] = [
   },
   {
     id: '2',
-    name: 'Virat Kohli',
-    category: 'Cricketers',
-    bio: 'Former Indian Captain and one of the greatest batsmen of all time. A fitness icon and marketing powerhouse.',
+    name: 'MANNARA CHOPRA',
+    category: 'Bollywood',
+    bio: '.',
     rating: 5.0,
-    imageUrl: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'MANNARA CHOPRA.jpeg',
     priceRange: 'Contact us',
-    followers: '260M+',
-    expertise: ['Sports Branding', 'Fitness Apps', 'Youth Motivation']
+    followers: '2 Million+',
+    expertise: ['Actor Branding', 'Fitness Apps', 'Youth Motivation']
   },
   {
     id: '3',
