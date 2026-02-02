@@ -22,7 +22,7 @@
     <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
 
     <title>Elite Faces Booking - Premium Talent Management</title>
-    <meta name="description" content="Book professional faces and talent for your events with Elite Faces Booking. High-quality event management services.">
+    <meta name="description" content="Book professional faces and talent for your events with Elite Faces Booking. High-quality talent management services.">
     <link rel="canonical" href="https://elitefacesbooking.vercel.app/" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
     <link rel="icon" type="image/png" href="LOGO.PNG">
@@ -35,41 +35,27 @@
     <meta property="og:site_name" content="Elite Faces Booking">
 
     <meta name="google-site-verification" content="qG2pEArT0EIKK04oxsc-kSgX__sdzGCETHCeGwwRuHk" />
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=GT-PLTT4RV3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'GT-PLTT4RV3');
-</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3507041827923673"
-     crossorigin="anonymous"></script>
-<!-- Ads -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-3507041827923673"
-     data-ad-slot="2693973606"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  gtag('consent', 'default', {
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'ad_storage': 'denied',
-    'analytics_storage': 'denied',
-    'wait_for_update': 500,
-  });
-  gtag('js', new Date());
-  gtag('config', 'GT-PLTT4RV3
-');
-  </script>
-    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PQV3LQQZ6J"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Default privacy settings as per latest policy
+      gtag('consent', 'default', {
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'ad_storage': 'denied',
+        'analytics_storage': 'denied',
+        'wait_for_update': 500
+      });
+
+      gtag('js', new Date());
+      gtag('config', 'G-PQV3LQQZ6J');
+    </script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3507041827923673" crossorigin="anonymous"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +66,8 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #020617;
             color: #f8fafc;
+            margin: 0;
+            padding: 0;
         }
         h1, h2, h3, .serif {
             font-family: 'Playfair Display', serif;
@@ -105,11 +93,28 @@
         .logo-glow:hover {
             filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
         }
+        /* Mobile visibility fix */
+        .technical-text-fix {
+            display: none !important;
+        }
     </style>
     <link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
+
+    <div class="technical-text-fix">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-3507041827923673"
+             data-ad-slot="2693973606"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>
