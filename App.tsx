@@ -149,9 +149,9 @@ const App: React.FC = () => {
           <div className="flex flex-wrap justify-center items-center gap-12 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
             <div className="text-2xl font-bold tracking-tighter">PEPSICO</div>
             <div className="text-2xl font-bold tracking-tighter">NIKE INDIA</div>
-            <div className="text-2xl font-bold tracking-tighter">L'ORÉAL</div>
-            <div className="text-2xl font-bold tracking-tighter">TATA MOTORS</div>
-            <div className="text-2xl font-bold tracking-tighter">MERCEDES-BENZ</div>
+            <div className="text-2xl font-bold tracking-tighter">Null</div>
+            <div className="text-2xl font-bold tracking-tighter">NULL</div>
+            <div className="text-2xl font-bold tracking-tighter">EIA</div>
           </div>
         </div>
       </section>
@@ -165,7 +165,7 @@ const App: React.FC = () => {
                 <span className="text-3xl font-black gold-gradient serif italic block">EliteFacesBooking</span>
             </div>
             <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
-              We manage the legends of today and the icons of tomorrow. Our mission is to bridge the gap between creative excellence and brand storytelling.
+              We manage the Legends and you can book celebrity,Infulancer, magicians,anchor Delhi largest talent agency company.
             </p>
             <div className="flex justify-center md:justify-start space-x-4">
               <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">IG</a>
