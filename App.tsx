@@ -171,6 +171,15 @@ const App: React.FC = () => {
               <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">IG</a>
               <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">LN</a>
               <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">X</a>
+
+<a 
+  href="https://wa.me/919990996091" 
+  target="_blank" 
+  className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors"
+>
+  <i className="fab fa-whatsapp"></i> {/* Ya aapka icon/text */}
+</a>
+
             </div>
           </div>
           <div>
