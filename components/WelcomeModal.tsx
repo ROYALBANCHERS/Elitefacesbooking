@@ -45,8 +45,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
 
       // Send email to admin
       await emailjs.send(
-  'gmail_service',
-  'welcome_booking_template',
+  'service_em3wlf9',
+  'template_5rpfhd7',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.fullName,
