@@ -5,20 +5,57 @@ import { RecommendationRequest } from '../types';
 
 const AIAssistant: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [response, setResponse] = useState<string | null>(null);
+  const [displayedResponse, setDisplayedResponse] = useState('');
   const [formData, setFormData] = useState<RecommendationRequest>({
     brandGoal: '',
     targetAudience: '',
     budget: 'Medium'
   });
 
+  const typeWriterEffect = (text: string, speed: number = 10) => {
+    let currentIndex = 0;
+    setDisplayedResponse('');
+
+    const interval = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayedResponse(prev => prev + text[currentIndex]);
+        currentIndex++;
+      } else {
+        clearInterval(interval);
+      }
+    }, speed);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setResponse(null);
-    const result = await getTalentRecommendations(formData);
-    setResponse(result);
-    setLoading(false);
+    setDisplayedResponse('');
+    setError('');
+
+    try {
+      if (!formData.brandGoal.trim() || !formData.targetAudience.trim()) {
+        setError('Please fill in all required fields');
+        setLoading(false);
+        return;
+      }
+      
+      const result = await getTalentRecommendations(formData);
+      
+      if (!result || result.includes('Error') || result.includes('unable')) {
+        setError('AI service returned an error. Please check your API key and try again.');
+      } else {
+        setResponse(result);
+        typeWriterEffect(result);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Failed to generate recommendations: ${errorMessage}. Make sure your API_KEY is set in environment variables.`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +70,12 @@ const AIAssistant: React.FC = () => {
               Not sure who to pick? Let our intelligent advisor recommend the perfect face for your campaign.
             </p>
           </div>
+
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 text-sm">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div>
@@ -81,11 +124,25 @@ const AIAssistant: React.FC = () => {
           </form>
 
           {response && (
-            <div className="bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-yellow-500/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="prose prose-invert prose-yellow max-w-none">
-                <div className="whitespace-pre-wrap leading-relaxed text-slate-300">
-                  {response}
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-2xl p-6 md:p-8 border border-yellow-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mb-3">
+                  <span className="text-yellow-400 font-bold text-sm uppercase tracking-widest">AI Expert Recommendation</span>
                 </div>
+                <div className="prose prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap leading-relaxed text-slate-200 text-base">
+                    {displayedResponse || response}
+                  </div>
+                  {displayedResponse && displayedResponse.length < response.length && (
+                    <span className="inline-block w-2 h-6 bg-yellow-500 ml-1 animate-pulse"></span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                <p className="text-sm text-slate-400">
+                  <span className="text-yellow-400 font-semibold">Pro Tip:</span> This recommendation is based on your campaign requirements and our talent database. Feel free to explore individual celebrity profiles for more details.
+                </p>
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 import { Celebrity } from '../types';
 
 interface BookingModalProps {
@@ -7,15 +8,61 @@ interface BookingModalProps {
   onClose: () => void;
 }
 
+// Initialize EmailJS (you'll need to set up an account on emailjs.com)
+emailjs.init('YOUR_EMAILJS_PUBLIC_KEY'); // Replace with your EmailJS public key
+
 const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    eventDate: '',
+    eventLocation: '',
+    eventType: 'Brand Endorsement',
+    requirements: ''
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess(true);
-    setTimeout(() => {
-      onClose();
-    }, 2000);
+    setLoading(true);
+    setError('');
+
+    try {
+      // Send email to the admin
+      await emailjs.send(
+        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
+        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+        {
+          to_email: 'elitefacesbooking@gmail.com',
+          from_name: formData.fullName,
+          from_email: formData.email,
+          celebrity_name: celebrity.name,
+          event_type: formData.eventType,
+          event_date: formData.eventDate,
+          event_location: formData.eventLocation,
+          requirements: formData.requirements,
+          category: celebrity.category
+        }
+      );
+
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (err) {
+      console.error('Email error:', err);
+      setError('Failed to submit request. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,24 +79,71 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
               <p className="text-yellow-500 text-sm font-semibold mb-6">Booking for {celebrity.category}</p>
               
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && <div className="bg-red-500/20 text-red-500 p-3 rounded-lg text-sm">{error}</div>}
                 <div className="grid grid-cols-2 gap-4">
-                  <input placeholder="Full Name" className="bg-slate-800 border-none rounded-lg p-3 w-full" required />
-                  <input placeholder="Work Email" type="email" className="bg-slate-800 border-none rounded-lg p-3 w-full" required />
+                  <input 
+                    placeholder="Full Name" 
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="bg-slate-800 border-none rounded-lg p-3 w-full text-white placeholder-slate-500" 
+                    required 
+                  />
+                  <input 
+                    placeholder="Work Email" 
+                    name="email"
+                    type="email" 
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="bg-slate-800 border-none rounded-lg p-3 w-full text-white placeholder-slate-500" 
+                    required 
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <input placeholder="Event Date" type="date" className="bg-slate-800 border-none rounded-lg p-3 w-full" required />
-                  <input placeholder="Event Location" className="bg-slate-800 border-none rounded-lg p-3 w-full" required />
+                  <input 
+                    placeholder="Event Date" 
+                    name="eventDate"
+                    type="date" 
+                    value={formData.eventDate}
+                    onChange={handleChange}
+                    className="bg-slate-800 border-none rounded-lg p-3 w-full text-white" 
+                    required 
+                  />
+                  <input 
+                    placeholder="Event Location" 
+                    name="eventLocation"
+                    value={formData.eventLocation}
+                    onChange={handleChange}
+                    className="bg-slate-800 border-none rounded-lg p-3 w-full text-white placeholder-slate-500" 
+                    required 
+                  />
                 </div>
-                <select className="bg-slate-800 border-none rounded-lg p-3 w-full text-slate-400">
+                <select 
+                  name="eventType"
+                  value={formData.eventType}
+                  onChange={handleChange}
+                  className="bg-slate-800 border-none rounded-lg p-3 w-full text-white"
+                >
                   <option>Brand Endorsement</option>
                   <option>Corporate Event</option>
                   <option>Social Media Collaboration</option>
                   <option>Guest Appearance</option>
                 </select>
-                <textarea placeholder="Tell us more about your requirements..." rows={3} className="bg-slate-800 border-none rounded-lg p-3 w-full"></textarea>
+                <textarea 
+                  placeholder="Tell us more about your requirements..." 
+                  name="requirements"
+                  rows={3} 
+                  value={formData.requirements}
+                  onChange={handleChange}
+                  className="bg-slate-800 border-none rounded-lg p-3 w-full text-white placeholder-slate-500"
+                ></textarea>
                 
-                <button type="submit" className="w-full py-4 btn-gold text-slate-950 font-bold rounded-xl mt-4">
-                  SUBMIT REQUEST
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full py-4 btn-gold text-slate-950 font-bold rounded-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'SUBMITTING...' : 'SUBMIT REQUEST'}
                 </button>
               </form>
             </div>

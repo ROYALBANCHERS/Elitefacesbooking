@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "installCommand": "npm install",
+  "env": {
+    "VITE_API_KEY": "@vite_api_key"
+  }
+}

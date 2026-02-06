@@ -1,15 +1,39 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
 import { Celebrity, Category } from './types';
 import CelebrityCard from './components/CelebrityCard';
 import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
+import WelcomeModal from './components/WelcomeModal';
+import BlogMenu from './components/BlogMenu';
+import { RouterProvider, useRouter, Page } from './components/Router';
+import PrivacyPolicy from './components/pages/PrivacyPolicy';
+import OurServices from './components/pages/OurServices';
+import BlogIndustryTrends from './components/pages/BlogIndustryTrends';
+import BlogFAQ from './components/pages/BlogFAQ';
+import BlogSuccessStories from './components/pages/BlogSuccessStories';
+import BlogEventPlanning from './components/pages/BlogEventPlanning';
+import AboutUs from './components/pages/AboutUs';
+import WhyChooseUs from './components/pages/WhyChooseUs';
+import FAQsPage from './components/pages/FAQsPage';
+import ContactUs from './components/pages/ContactUs';
+import Portfolio from './components/pages/Portfolio';
 
-const App: React.FC = () => {
+const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const { navigateTo } = useRouter();
+
+  // Show welcome modal only once on first visit
+  useEffect(() => {
+    const hasVisited = sessionStorage.getItem('elitefaces_visited');
+    if (hasVisited) {
+      setShowWelcomeModal(false);
+    }
+  }, []);
 
   const filteredCelebrities = useMemo(() => {
     return CELEBRITIES.filter(c => {
@@ -24,7 +48,10 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3">
         <div className="container mx-auto flex justify-between items-center">
-          <a href="#" className="flex items-center space-x-3 group logo-glow transition-all">
+          <button 
+            onClick={() => navigateTo('home')}
+            className="flex items-center space-x-3 group logo-glow transition-all hover:opacity-80"
+          >
             <img 
               src="LOGO.PNG" 
               alt="EliteFaces Logo" 
@@ -34,12 +61,14 @@ const App: React.FC = () => {
               <span className="text-xl font-black tracking-tighter gold-gradient italic serif leading-tight">EliteFaces</span>
               <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 hidden sm:block">Luxury Booking</span>
             </div>
-          </a>
+          </button>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
-            <a href="#roster" className="hover:text-yellow-500 transition-colors">TALENT ROSTER</a>
-            <a href="#ai-consultant" className="hover:text-yellow-500 transition-colors">AI ADVISOR</a>
-            <a href="#" className="hover:text-yellow-500 transition-colors">OUR SERVICES</a>
-            <a href="mailto:elitefacesbooking@gmail.com" className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold">CONTACT</a>
+            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors">TALENT ROSTER</button>
+            <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors">OUR SERVICES</button>
+            <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors">ABOUT</button>
+            <BlogMenu />
+            <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors">PORTFOLIO</button>
+            <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold">CONTACT</button>
           </div>
         </div>
       </nav>
@@ -206,9 +235,11 @@ const App: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Company</h4>
             <ul className="space-y-4 text-slate-400">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Our Success Stories</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><button onClick={() => navigateTo('about')} className="hover:text-white transition-colors">About Us</button></li>
+              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-white transition-colors">Our Success Stories</button></li>
+              <li><button onClick={() => navigateTo('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
+              <li><button onClick={() => navigateTo('faqs')} className="hover:text-white transition-colors">FAQs</button></li>
+              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-white transition-colors">Blog</button></li>
             </ul>
           </div>
         </div>
@@ -216,6 +247,16 @@ const App: React.FC = () => {
           © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
         </div>
       </footer>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          onClose={() => {
+            setShowWelcomeModal(false);
+            sessionStorage.setItem('elitefaces_visited', 'true');
+          }} 
+        />
+      )}
 
       {/* Booking Modal */}
       {bookingCelebrity && (
@@ -225,6 +266,37 @@ const App: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+interface AppContainerProps {}
+
+const AppContainer: React.FC<AppContainerProps> = () => {
+  const { currentPage } = useRouter();
+
+  return (
+    <>
+      {currentPage === 'home' && <HomePage />}
+      {currentPage === 'privacy' && <PrivacyPolicy />}
+      {currentPage === 'services' && <OurServices />}
+      {currentPage === 'blog-industry' && <BlogIndustryTrends />}
+      {currentPage === 'blog-faq' && <BlogFAQ />}
+      {currentPage === 'blog-success' && <BlogSuccessStories />}
+      {currentPage === 'blog-event' && <BlogEventPlanning />}
+      {currentPage === 'about' && <AboutUs />}
+      {currentPage === 'why-us' && <WhyChooseUs />}
+      {currentPage === 'faqs' && <FAQsPage />}
+      {currentPage === 'contact' && <ContactUs />}
+      {currentPage === 'portfolio' && <Portfolio />}
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <RouterProvider>
+      <AppContainer />
+    </RouterProvider>
   );
 };
 
