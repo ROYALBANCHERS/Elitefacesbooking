@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export type Page = 'home' | 'privacy' | 'services' | 'blog-industry' | 'blog-faq' | 'blog-success' | 'blog-event' | 'about' | 'why-us' | 'faqs' | 'contact' | 'portfolio';
+export type Page = 'home' | 'celebrities' | 'privacy' | 'services' | 'blog-industry' | 'blog-faq' | 'blog-success' | 'blog-event' | 'about' | 'why-us' | 'faqs' | 'contact' | 'portfolio';
 
 interface RouterContextType {
   currentPage: Page;

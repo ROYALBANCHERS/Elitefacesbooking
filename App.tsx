@@ -6,6 +6,7 @@ import CelebrityCard from './components/CelebrityCard';
 import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
 import WelcomeModal from './components/WelcomeModal';
+import MobileMenu from './components/MobileMenu';
 import BlogMenu from './components/BlogMenu';
 import { RouterProvider, useRouter, Page } from './components/Router';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
@@ -19,6 +20,7 @@ import WhyChooseUs from './components/pages/WhyChooseUs';
 import FAQsPage from './components/pages/FAQsPage';
 import ContactUs from './components/pages/ContactUs';
 import Portfolio from './components/pages/Portfolio';
+import Celebrities from './components/pages/Celebrities';
 
 const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
@@ -63,13 +65,14 @@ const HomePage: React.FC = () => {
             </div>
           </button>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
-            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors">TALENT ROSTER</button>
             <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors">OUR SERVICES</button>
+            <button onClick={() => navigateTo('celebrities')} className="hover:text-yellow-500 transition-colors">ALL CELEBRITIES</button>
             <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors">ABOUT</button>
             <BlogMenu />
             <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors">PORTFOLIO</button>
             <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold">CONTACT</button>
           </div>
+          <MobileMenu />
         </div>
       </nav>
 
@@ -277,6 +280,7 @@ const AppContainer: React.FC<AppContainerProps> = () => {
   return (
     <>
       {currentPage === 'home' && <HomePage />}
+      {currentPage === 'celebrities' && <Celebrities />}
       {currentPage === 'privacy' && <PrivacyPolicy />}
       {currentPage === 'services' && <OurServices />}
       {currentPage === 'blog-industry' && <BlogIndustryTrends />}
