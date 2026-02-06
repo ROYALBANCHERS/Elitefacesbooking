@@ -37,10 +37,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
     setError('');
 
     try {
+      // Validate form data before sending
+      if (!formData.fullName || !formData.email || !formData.eventDate || !formData.eventLocation) {
+        setError('Please fill in all required fields.');
+        setLoading(false);
+        return;
+      }
+
       // Send email to the admin
       await emailjs.send(
-  'service_em3wlf9',
-  'template_5rpfhd7',
+        'service_em3wlf9',
+        'template_5rpfhd7',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.fullName,

@@ -19,6 +19,7 @@ import WhyChooseUs from './components/pages/WhyChooseUs';
 import FAQsPage from './components/pages/FAQsPage';
 import ContactUs from './components/pages/ContactUs';
 import Portfolio from './components/pages/Portfolio';
+import ArticleDetail from './components/ArticleDetail';
 
 const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
@@ -272,7 +273,7 @@ const HomePage: React.FC = () => {
 interface AppContainerProps {}
 
 const AppContainer: React.FC<AppContainerProps> = () => {
-  const { currentPage } = useRouter();
+  const { currentPage, selectedArticle } = useRouter();
 
   return (
     <>
@@ -288,6 +289,7 @@ const AppContainer: React.FC<AppContainerProps> = () => {
       {currentPage === 'faqs' && <FAQsPage />}
       {currentPage === 'contact' && <ContactUs />}
       {currentPage === 'portfolio' && <Portfolio />}
+      {currentPage === 'article-detail' && <ArticleDetail article={selectedArticle} />}
     </>
   );
 };
