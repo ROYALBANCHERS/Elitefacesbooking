@@ -3,7 +3,7 @@ import emailjs from '@emailjs/browser';
 import { useRouter } from '../Router';
 
 // Initialize EmailJS
-emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');
+emailjs.init('Aco8Fura5q-jpJj8q');
 
 const ContactUs: React.FC = () => {
   const { navigateTo } = useRouter();
@@ -33,8 +33,8 @@ const ContactUs: React.FC = () => {
 
     try {
       await emailjs.send(
-        'YOUR_SERVICE_ID',
-        'YOUR_CONTACT_TEMPLATE_ID',
+        'service_em3wlf9',
+        'template_5rpfhd7',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.name,
