@@ -34,7 +34,7 @@ const ContactUs: React.FC = () => {
     try {
       await emailjs.send(
         'service_em3wlf9',
-        'template_5rpfhd7',
+        'template_6izepv4',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.name,
