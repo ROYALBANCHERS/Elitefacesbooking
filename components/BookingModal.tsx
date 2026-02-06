@@ -49,7 +49,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
         'service_em3wlf9',
         'template_5rpfhd7',
         {
-          to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.fullName,
           from_email: formData.email,
           celebrity_name: celebrity.name,

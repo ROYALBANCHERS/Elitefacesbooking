@@ -70,7 +70,6 @@ const ContactUs: React.FC = () => {
       console.log('[v0] Sending contact form with data:', formData);
       
       const emailData = {
-        to_email: 'elitefacesbooking@gmail.com',
         from_name: formData.name.trim(),
         from_email: formData.email.trim(),
         phone: formData.phone.trim(),
