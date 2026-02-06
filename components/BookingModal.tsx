@@ -9,7 +9,7 @@ interface BookingModalProps {
 }
 
 // Initialize EmailJS (you'll need to set up an account on emailjs.com)
-emailjs.init('YOUR_EMAILJS_PUBLIC_KEY'); // Replace with your EmailJS public key
+emailjs.init('Aco8Fura5q-jpJj8q'); // Replace with your EmailJS public key
 
 const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
   const [success, setSuccess] = useState(false);
@@ -39,8 +39,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
     try {
       // Send email to the admin
       await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+  'gmail_service',
+  'welcome_booking_template',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.fullName,
