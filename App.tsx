@@ -28,6 +28,15 @@ const HomePage: React.FC = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const { navigateTo } = useRouter();
 
+  // Update page title and meta tags for SEO
+  React.useEffect(() => {
+    document.title = 'Elite Faces Booking - Book Top Celebrities & Influencers in India';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Book top Indian celebrities, actors, influencers, and entertainment talent for events, endorsements, and brand collaborations. Professional talent management agency in Delhi.');
+    }
+  }, []);
+
   // Show welcome modal only once on first visit
   useEffect(() => {
     const hasVisited = sessionStorage.getItem('elitefaces_visited');
@@ -47,46 +56,47 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3">
+      <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3" role="navigation" aria-label="Main Navigation">
         <div className="container mx-auto flex justify-between items-center">
           <button 
             onClick={() => navigateTo('home')}
             className="flex items-center space-x-3 group logo-glow transition-all hover:opacity-80"
+            aria-label="Elite Faces Booking - Home"
           >
             <img 
               src="LOGO.PNG" 
-              alt="EliteFaces Logo" 
+              alt="Elite Faces Booking Logo" 
               className="h-12 w-12 rounded-full object-cover border border-white/10"
             />
             <div className="flex flex-col -space-y-1">
               <span className="text-xl font-black tracking-tighter gold-gradient italic serif leading-tight">EliteFaces</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 hidden sm:block">Luxury Booking</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 hidden sm:block">Celebrity Booking</span>
             </div>
           </button>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
-            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors">TALENT ROSTER</button>
-            <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors">OUR SERVICES</button>
-            <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors">ABOUT</button>
+            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
+            <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">OUR SERVICES</button>
+            <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors" title="Learn about us">ABOUT</button>
             <BlogMenu />
-            <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors">PORTFOLIO</button>
-            <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold">CONTACT</button>
+            <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors" title="View success stories">PORTFOLIO</button>
+            <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold" title="Contact us for booking">CONTACT</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-40 pb-32 overflow-hidden">
+      <header className="relative pt-40 pb-32 overflow-hidden" role="banner">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-transparent to-transparent"></div>
           {/* Subtle logo watermark background */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] scale-150 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] scale-150 pointer-events-none" aria-hidden="true">
             <img src="LOGO.png" alt="" className="w-[800px] grayscale brightness-200" />
           </div>
         </div>
         
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="flex justify-center mb-8 animate-in fade-in zoom-in duration-1000">
-             <img src="LOGO.PNG" alt="EliteFaces" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
+             <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
           </div>
           <span className="text-yellow-500 font-bold tracking-[0.5em] uppercase text-sm mb-6 block animate-in fade-in slide-in-from-top-4 duration-1000">India's Leading Talent Agency</span>
           <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight">
@@ -94,7 +104,7 @@ const HomePage: React.FC = () => {
             <span className="gold-gradient serif">Iconic Faces</span>
           </h1>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-12">
-            Connecting global brands with India's most influential celebrities, sports stars, and digital icons for unparalleled impact.
+            Book India's top celebrities, actors, influencers, and entertainment talent. Professional talent management and celebrity booking services for events, endorsements, and brand collaborations.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <a href="#roster" className="btn-gold text-slate-950 px-10 py-5 rounded-xl font-bold text-lg w-full sm:w-auto">BROWSE TALENT</a>
@@ -104,12 +114,12 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Roster Section */}
-      <section id="roster" className="py-24 bg-slate-950/50">
+      <section id="roster" className="py-24 bg-slate-950/50" aria-label="Celebrity Talent Roster">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center mb-16 space-y-8 md:space-y-0">
             <div className="max-w-xl text-center md:text-left">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">The Premier Roster</h2>
-              <p className="text-slate-400 italic">Curated representation for the most sought-after Indian icons.</p>
+              <p className="text-slate-400 italic">Browse our curated collection of India's most sought-after celebrities, actors, influencers, and entertainment talent available for booking.</p>
             </div>
             
             <div className="w-full md:w-auto flex flex-col items-center md:items-end space-y-6">
@@ -187,15 +197,15 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 glass mt-20">
+      <footer className="py-20 glass mt-20" role="contentinfo">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
           <div className="md:col-span-2">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <img src="LOGO.PNG" alt="EliteFaces" className="h-16 w-16 rounded-full border border-white/10" />
+                <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-16 w-16 rounded-full border border-white/10" />
                 <span className="text-3xl font-black gold-gradient serif italic block">EliteFacesBooking</span>
             </div>
             <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
-              We manage the Legends and you can book celebrity,Infulancer, magicians,anchor Delhi largest talent agency company.
+              Delhi's leading talent management agency. Book top Indian celebrities, actors, influencers, anchors, magicians, and entertainment talent for events, endorsements, and brand collaborations.
             </p>
             <div className="flex justify-center md:justify-start space-x-4">
               <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">IG</a>
@@ -220,8 +230,8 @@ const HomePage: React.FC = () => {
 
             </div>
           </div>
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Connect</h4>
+          <nav>
+            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Get in Touch</h4>
             <ul className="space-y-4 text-slate-400">
               <li>
                 <a href="mailto:elitefacesbooking@gmail.com" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
@@ -229,20 +239,28 @@ const HomePage: React.FC = () => {
                   <span>elitefacesbooking@gmail.com</span>
                 </a>
               </li>
-              <li><a href="#" className="hover:text-white transition-colors">Bollywood Talent</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Infulancer Management</a></li>
+              <li><a href="tel:+919990996091" className="hover:text-yellow-500 transition-colors">+91 9990996091</a></li>
+              <li><a href="https://wa.me/919990996091" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">WhatsApp Chat</a></li>
             </ul>
-          </div>
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Company</h4>
+          </nav>
+          <nav>
+            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Services</h4>
             <ul className="space-y-4 text-slate-400">
+              <li><button onClick={() => navigateTo('services')} className="hover:text-white transition-colors">Our Services</button></li>
+              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-white transition-colors">Success Stories</button></li>
               <li><button onClick={() => navigateTo('about')} className="hover:text-white transition-colors">About Us</button></li>
-              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-white transition-colors">Our Success Stories</button></li>
-              <li><button onClick={() => navigateTo('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
-              <li><button onClick={() => navigateTo('faqs')} className="hover:text-white transition-colors">FAQs</button></li>
-              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-white transition-colors">Blog</button></li>
+              <li><button onClick={() => navigateTo('contact')} className="hover:text-white transition-colors">Book Talent</button></li>
             </ul>
-          </div>
+          </nav>
+          <nav>
+            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Resources</h4>
+            <ul className="space-y-4 text-slate-400">
+              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-white transition-colors">Blog</button></li>
+              <li><button onClick={() => navigateTo('faqs')} className="hover:text-white transition-colors">FAQs</button></li>
+              <li><button onClick={() => navigateTo('why-us')} className="hover:text-white transition-colors">Why Choose Us</button></li>
+              <li><button onClick={() => navigateTo('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
+            </ul>
+          </nav>
         </div>
         <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/5 text-center text-slate-500 text-xs tracking-widest uppercase">
           © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
