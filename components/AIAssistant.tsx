@@ -7,30 +7,52 @@ const AIAssistant: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [response, setResponse] = useState<string | null>(null);
+  const [displayedResponse, setDisplayedResponse] = useState('');
   const [formData, setFormData] = useState<RecommendationRequest>({
     brandGoal: '',
     targetAudience: '',
     budget: 'Medium'
   });
 
+  const typeWriterEffect = (text: string, speed: number = 10) => {
+    let currentIndex = 0;
+    setDisplayedResponse('');
+
+    const interval = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayedResponse(prev => prev + text[currentIndex]);
+        currentIndex++;
+      } else {
+        clearInterval(interval);
+      }
+    }, speed);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setResponse(null);
+    setDisplayedResponse('');
     setError('');
 
     try {
-      if (!formData.brandGoal || !formData.targetAudience) {
+      if (!formData.brandGoal.trim() || !formData.targetAudience.trim()) {
         setError('Please fill in all required fields');
         setLoading(false);
         return;
       }
       
       const result = await getTalentRecommendations(formData);
-      setResponse(result);
+      
+      if (!result || result.includes('Error') || result.includes('unable')) {
+        setError('AI service returned an error. Please check your API key and try again.');
+      } else {
+        setResponse(result);
+        typeWriterEffect(result);
+      }
     } catch (err) {
-      console.error('AI Assistant error:', err);
-      setError('Failed to generate recommendations. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Failed to generate recommendations: ${errorMessage}. Make sure your API_KEY is set in environment variables.`);
     } finally {
       setLoading(false);
     }
@@ -102,11 +124,25 @@ const AIAssistant: React.FC = () => {
           </form>
 
           {response && (
-            <div className="bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-yellow-500/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="prose prose-invert prose-yellow max-w-none">
-                <div className="whitespace-pre-wrap leading-relaxed text-slate-300">
-                  {response}
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-2xl p-6 md:p-8 border border-yellow-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mb-3">
+                  <span className="text-yellow-400 font-bold text-sm uppercase tracking-widest">AI Expert Recommendation</span>
                 </div>
+                <div className="prose prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap leading-relaxed text-slate-200 text-base">
+                    {displayedResponse || response}
+                  </div>
+                  {displayedResponse && displayedResponse.length < response.length && (
+                    <span className="inline-block w-2 h-6 bg-yellow-500 ml-1 animate-pulse"></span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                <p className="text-sm text-slate-400">
+                  <span className="text-yellow-400 font-semibold">Pro Tip:</span> This recommendation is based on your campaign requirements and our talent database. Feel free to explore individual celebrity profiles for more details.
+                </p>
               </div>
             </div>
           )}
