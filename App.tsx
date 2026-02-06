@@ -1,10 +1,11 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
 import { Celebrity, Category } from './types';
 import CelebrityCard from './components/CelebrityCard';
 import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
+import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
 import { RouterProvider, useRouter, Page } from './components/Router';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
@@ -23,7 +24,16 @@ const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const { navigateTo } = useRouter();
+
+  // Show welcome modal only once on first visit
+  useEffect(() => {
+    const hasVisited = sessionStorage.getItem('elitefaces_visited');
+    if (hasVisited) {
+      setShowWelcomeModal(false);
+    }
+  }, []);
 
   const filteredCelebrities = useMemo(() => {
     return CELEBRITIES.filter(c => {
@@ -237,6 +247,16 @@ const HomePage: React.FC = () => {
           © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
         </div>
       </footer>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          onClose={() => {
+            setShowWelcomeModal(false);
+            sessionStorage.setItem('elitefaces_visited', 'true');
+          }} 
+        />
+      )}
 
       {/* Booking Modal */}
       {bookingCelebrity && (

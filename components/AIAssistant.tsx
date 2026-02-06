@@ -5,6 +5,7 @@ import { RecommendationRequest } from '../types';
 
 const AIAssistant: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [response, setResponse] = useState<string | null>(null);
   const [formData, setFormData] = useState<RecommendationRequest>({
     brandGoal: '',
@@ -16,9 +17,23 @@ const AIAssistant: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setResponse(null);
-    const result = await getTalentRecommendations(formData);
-    setResponse(result);
-    setLoading(false);
+    setError('');
+
+    try {
+      if (!formData.brandGoal || !formData.targetAudience) {
+        setError('Please fill in all required fields');
+        setLoading(false);
+        return;
+      }
+      
+      const result = await getTalentRecommendations(formData);
+      setResponse(result);
+    } catch (err) {
+      console.error('AI Assistant error:', err);
+      setError('Failed to generate recommendations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +48,12 @@ const AIAssistant: React.FC = () => {
               Not sure who to pick? Let our intelligent advisor recommend the perfect face for your campaign.
             </p>
           </div>
+
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 text-sm">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div>
