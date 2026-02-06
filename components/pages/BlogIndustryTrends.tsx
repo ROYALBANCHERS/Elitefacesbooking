@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from '../Router';
 
 const BlogIndustryTrends: React.FC = () => {
-  const { navigateTo } = useRouter();
+  const { navigateTo, setSelectedArticle } = useRouter();
 
   const articles = [
     {
@@ -79,7 +79,13 @@ Brands partnering with these digitally-native celebrities gain access to authent
               <div className="text-slate-300 whitespace-pre-line text-base leading-relaxed max-h-48 overflow-hidden">
                 {article.content}
               </div>
-              <button className="text-yellow-500 font-semibold hover:text-yellow-400 mt-4 uppercase tracking-widest text-sm">
+              <button 
+                onClick={() => {
+                  setSelectedArticle(article);
+                  navigateTo('article-detail');
+                }}
+                className="text-yellow-500 font-semibold hover:text-yellow-400 mt-4 uppercase tracking-widest text-sm transition-colors"
+              >
                 Read Full Article →
               </button>
             </article>
