@@ -84,7 +84,7 @@ const ContactUs: React.FC = () => {
       
       const response = await emailjs.send(
         'service_em3wlf9',
-        'template_5rpfhd7',
+        'template_6izepv4', // Contact form template
         emailData
       );
 

@@ -47,7 +47,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
       // Send email to the admin
       await emailjs.send(
         'service_em3wlf9',
-        'template_5rpfhd7',
+        'template_5rpfhd7', // Booking template
         {
           from_name: formData.fullName,
           from_email: formData.email,
