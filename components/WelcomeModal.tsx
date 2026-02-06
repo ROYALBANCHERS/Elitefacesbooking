@@ -5,7 +5,7 @@ interface WelcomeModalProps {
   onClose: () => void;
 }
 
-emailjs.init('YOUR_EMAILJS_PUBLIC_KEY'); // Replace with your EmailJS public key
+emailjs.init('Aco8Fura5q-jpJj8q'); // Replace with your EmailJS public key
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const [step, setStep] = useState<'greeting' | 'form'>('greeting');
@@ -45,8 +45,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
 
       // Send email to admin
       await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+  'gmail_service',
+  'welcome_booking_template',
         {
           to_email: 'elitefacesbooking@gmail.com',
           from_name: formData.fullName,
