@@ -33,9 +33,15 @@ const ContactUs: React.FC = () => {
     setError('');
     setLoading(true);
 
-    // Validate required fields
-    if (!formData.name || !formData.email || !formData.phone || !formData.message) {
-      setError('Please fill in all required fields');
+    // Validate only essential required fields
+    if (!formData.name.trim()) {
+      setError('Please enter your name');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError('Please enter your email address');
       setLoading(false);
       return;
     }
@@ -48,23 +54,39 @@ const ContactUs: React.FC = () => {
       return;
     }
 
+    if (!formData.phone.trim()) {
+      setError('Please enter your phone number');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.message.trim()) {
+      setError('Please enter a message');
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log('[v0] Sending contact form with data:', formData);
+      
+      const emailData = {
+        to_email: 'elitefacesbooking@gmail.com',
+        from_name: formData.name.trim(),
+        from_email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        company: formData.company.trim() || 'Not specified',
+        event_type: formData.eventType || 'Not specified',
+        event_date: formData.eventDate || 'Not specified',
+        budget: formData.budget || 'Not specified',
+        message: formData.message.trim()
+      };
+
+      console.log('[v0] Email payload:', emailData);
       
       const response = await emailjs.send(
         'service_em3wlf9',
         'template_5rpfhd7',
-        {
-          to_email: 'elitefacesbooking@gmail.com',
-          from_name: formData.name,
-          from_email: formData.email,
-          phone: formData.phone,
-          company: formData.company || 'Not specified',
-          event_type: formData.eventType || 'Not specified',
-          event_date: formData.eventDate || 'Not specified',
-          budget: formData.budget || 'Not specified',
-          message: formData.message
-        }
+        emailData
       );
 
       console.log('[v0] Email sent successfully:', response);
@@ -194,7 +216,6 @@ const ContactUs: React.FC = () => {
                         onChange={handleChange}
                         placeholder="John Doe"
                         className="w-full bg-slate-800/50 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200"
-                        required
                       />
                     </div>
                     <div>
@@ -206,7 +227,6 @@ const ContactUs: React.FC = () => {
                         onChange={handleChange}
                         placeholder="john@company.com"
                         className="w-full bg-slate-800/50 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200"
-                        required
                       />
                     </div>
                   </div>
@@ -221,7 +241,6 @@ const ContactUs: React.FC = () => {
                         onChange={handleChange}
                         placeholder="+91 9999999999"
                         className="w-full bg-slate-800/50 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200"
-                        required
                       />
                     </div>
                     <div>
