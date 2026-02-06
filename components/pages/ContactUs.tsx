@@ -86,6 +86,18 @@ const ContactUs: React.FC = () => {
         'service_em3wlf9',
         'template_6izepv4', // Contact form template
         emailData
+        'template_6izepv4',
+        {
+          to_email: 'elitefacesbooking@gmail.com',
+          from_name: formData.name,
+          from_email: formData.email,
+          phone: formData.phone,
+          company: formData.company,
+          event_type: formData.eventType,
+          event_date: formData.eventDate,
+          budget: formData.budget,
+          message: formData.message
+        }
       );
 
       console.log('[v0] Email sent successfully:', response);
