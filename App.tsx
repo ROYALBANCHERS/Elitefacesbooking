@@ -28,6 +28,7 @@ const HomePage: React.FC = () => {
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [celebrities, setCelebrities] = useState(CELEBRITIES);
   const { navigateTo } = useRouter();
 
@@ -51,6 +52,17 @@ const HomePage: React.FC = () => {
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+  }, []);
+
+  const handleTalentRosterClick = useCallback(() => {
+    navigateTo('home');
+    setTimeout(() => {
+      document.getElementById('roster')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }, [navigateTo]);
+
+  const toggleMobileMenu = useCallback(() => {
+    setShowMobileMenu(prev => !prev);
   }, []);
 
   // Update page title and meta tags for SEO
@@ -83,14 +95,14 @@ const HomePage: React.FC = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3" role="navigation" aria-label="Main Navigation">
         <div className="container mx-auto flex justify-between items-center">
-          <button 
+          <button
             onClick={() => navigateTo('home')}
             className="flex items-center space-x-3 group logo-glow transition-all hover:opacity-80"
             aria-label="Elite Faces Booking - Home"
           >
-            <img 
-              src="LOGO.PNG" 
-              alt="Elite Faces Booking Logo" 
+            <img
+              src="LOGO.PNG"
+              alt="Elite Faces Booking Logo"
               className="h-12 w-12 rounded-full object-cover border border-white/10"
             />
             <div className="flex flex-col -space-y-1">
@@ -98,15 +110,69 @@ const HomePage: React.FC = () => {
               <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 hidden sm:block">Celebrity Booking</span>
             </div>
           </button>
+
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
-            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
+            <button onClick={handleTalentRosterClick} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
             <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">OUR SERVICES</button>
             <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors" title="Learn about us">ABOUT</button>
             <BlogMenu />
             <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors" title="View success stories">PORTFOLIO</button>
             <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold" title="Contact us for booking">CONTACT</button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMobileMenu}
+            className="md:hidden flex flex-col space-y-1.5 p-2 rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="Toggle mobile menu"
+          >
+            <span className={`w-6 h-0.5 bg-slate-300 transition-all ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-slate-300 transition-all ${showMobileMenu ? 'opacity-0' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-slate-300 transition-all ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden absolute top-full left-0 right-0 glass border-t border-white/10 py-4 px-6 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col space-y-4">
+              <button
+                onClick={() => { handleTalentRosterClick(); setShowMobileMenu(false); }}
+                className="text-left py-2 text-slate-300 hover:text-yellow-500 transition-colors font-medium tracking-widest text-sm"
+              >
+                TALENT ROSTER
+              </button>
+              <button
+                onClick={() => { navigateTo('services'); setShowMobileMenu(false); }}
+                className="text-left py-2 text-slate-300 hover:text-yellow-500 transition-colors font-medium tracking-widest text-sm"
+              >
+                OUR SERVICES
+              </button>
+              <button
+                onClick={() => { navigateTo('about'); setShowMobileMenu(false); }}
+                className="text-left py-2 text-slate-300 hover:text-yellow-500 transition-colors font-medium tracking-widest text-sm"
+              >
+                ABOUT
+              </button>
+              <div className="py-2">
+                <BlogMenu onClose={() => setShowMobileMenu(false)} />
+              </div>
+              <button
+                onClick={() => { navigateTo('portfolio'); setShowMobileMenu(false); }}
+                className="text-left py-2 text-slate-300 hover:text-yellow-500 transition-colors font-medium tracking-widest text-sm"
+              >
+                PORTFOLIO
+              </button>
+              <button
+                onClick={() => { navigateTo('contact'); setShowMobileMenu(false); }}
+                className="text-left py-3 btn-gold text-slate-950 px-6 rounded-full font-bold text-sm"
+              >
+                CONTACT
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -243,7 +309,7 @@ const HomePage: React.FC = () => {
                 <i className="fab fa-x-twitter"></i>
               </a>
               <a
-                href="https://wa.me/919990996091"
+                href="https://wa.me/919990996091?text=Hi%2C%20I%20wanted%20to%20book%20a%20celebrity.%20Please%20share%20the%20details."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
@@ -252,7 +318,7 @@ const HomePage: React.FC = () => {
                 <i className="fab fa-whatsapp text-lg"></i>
               </a>
               <a
-                href="https://wa.me/917678683436"
+                href="https://wa.me/917678683436?text=Hi%2C%20I%20wanted%20to%20book%20a%20celebrity.%20Please%20share%20the%20details."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
@@ -274,19 +340,19 @@ const HomePage: React.FC = () => {
               <li>
                 <a href="tel:+919990996091" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
                   <i className="fas fa-phone text-sm"></i>
-                  <span>+91 9990996091</span>
+                  <span>Call Now</span>
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/919990996091" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
+                <a href="https://wa.me/919990996091?text=Hi%2C%20I%20wanted%20to%20book%20a%20celebrity.%20Please%20share%20the%20details." target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
                   <i className="fab fa-whatsapp text-sm"></i>
-                  <span>WhatsApp Chat 1</span>
+                  <span>WhatsApp 1</span>
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/917678683436" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
+                <a href="https://wa.me/917678683436?text=Hi%2C%20I%20wanted%20to%20book%20a%20celebrity.%20Please%20share%20the%20details." target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
                   <i className="fab fa-whatsapp text-sm"></i>
-                  <span>WhatsApp Chat 2</span>
+                  <span>WhatsApp 2</span>
                 </a>
               </li>
             </ul>

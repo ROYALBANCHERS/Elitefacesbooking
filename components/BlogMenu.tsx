@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from './Router';
 
-const BlogMenu: React.FC = () => {
+interface BlogMenuProps {
+  onClose?: () => void;
+}
+
+const BlogMenu: React.FC<BlogMenuProps> = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { navigateTo } = useRouter();
 
@@ -32,6 +36,7 @@ const BlogMenu: React.FC = () => {
               onClick={() => {
                 navigateTo(page.id as any);
                 setIsOpen(false);
+                onClose?.();
               }}
               className="block w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-yellow-500 transition-colors"
             >

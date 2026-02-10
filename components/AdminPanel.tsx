@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Celebrity } from '../types';
 
-// Admin credentials
-const ADMIN_CREDENTIALS = {
+// Admin credentials - stored in localStorage for persistence
+const DEFAULT_ADMIN_CREDENTIALS = {
   username: 'Rishabhkumar023',
-  email: 'growthing868@gmail.com'
+  password: 'Admin@123'
 };
 
 // Blog content interface
@@ -17,22 +17,35 @@ interface BlogPost {
   date: string;
 }
 
+interface PageContent {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+}
+
 interface AdminPanelProps {
   onClose: () => void;
   onUpdateCelebrities: (celebrities: Celebrity[]) => void;
   celebrities: Celebrity[];
   onUpdateBlogs?: (blogs: BlogPost[]) => void;
+  onUpdatePages?: (pages: PageContent[]) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs, onUpdatePages }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images'>('celebrities');
+  const [password, setPassword] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images' | 'pages' | 'settings'>('celebrities');
   const [editingCelebrity, setEditingCelebrity] = useState<Celebrity | null>(null);
   const [celebrityList, setCelebrityList] = useState<Celebrity[]>(celebrities);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [pageContents, setPageContents] = useState<PageContent[]>([]);
+  const [editingPage, setEditingPage] = useState<PageContent | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -43,6 +56,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     if (auth === 'true') {
       setIsAuthenticated(true);
     }
+
+    // Load admin credentials from localStorage or use defaults
+    const storedCreds = localStorage.getItem('admin_credentials');
+    if (!storedCreds) {
+      localStorage.setItem('admin_credentials', JSON.stringify(DEFAULT_ADMIN_CREDENTIALS));
+    }
+
+    // Load page contents from localStorage
+    const storedPages = localStorage.getItem('page_contents');
+    if (storedPages) {
+      setPageContents(JSON.parse(storedPages));
+    }
+
+    // Load blog posts from localStorage
+    const storedBlogs = localStorage.getItem('blog_posts');
+    if (storedBlogs) {
+      setBlogPosts(JSON.parse(storedBlogs));
+    }
   }, []);
 
   const showToastMessage = (message: string, type: 'success' | 'error') => {
@@ -52,14 +83,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  const getAdminCredentials = () => {
+    const stored = localStorage.getItem('admin_credentials');
+    return stored ? JSON.parse(stored) : DEFAULT_ADMIN_CREDENTIALS;
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_CREDENTIALS.username && email === ADMIN_CREDENTIALS.email) {
+    const creds = getAdminCredentials();
+    if (username === creds.username && password === creds.password) {
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_auth', 'true');
       showToastMessage('Welcome back, Admin!', 'success');
+      setPassword('');
     } else {
-      showToastMessage('Invalid credentials!', 'error');
+      showToastMessage('Invalid username or password!', 'error');
     }
   };
 
@@ -67,7 +105,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setIsAuthenticated(false);
     sessionStorage.removeItem('admin_auth');
     setUsername('');
-    setEmail('');
+    setPassword('');
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToastMessage('Passwords do not match!', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToastMessage('Password must be at least 6 characters!', 'error');
+      return;
+    }
+    const creds = getAdminCredentials();
+    creds.password = newPassword;
+    localStorage.setItem('admin_credentials', JSON.stringify(creds));
+    showToastMessage('Password changed successfully!', 'success');
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowChangePassword(false);
   };
 
   const handleEditCelebrity = (celebrity: Celebrity) => {
@@ -197,13 +254,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Email</label>
+                <label className="text-sm text-slate-400 mb-1 block">Password</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-                  placeholder="Enter email"
+                  placeholder="Enter password"
                   required
                 />
               </div>
