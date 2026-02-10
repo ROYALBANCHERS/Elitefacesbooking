@@ -62,7 +62,7 @@ const BlogListingPage: React.FC<{ section?: string }> = ({ section }) => {
   const handleBlogClick = (blog: BlogPost) => {
     // Store selected blog for detail view
     localStorage.setItem('elitefaces_selected_blog', JSON.stringify(blog));
-    navigateTo('home'); // This will be handled by router later
+    navigateTo('blog-detail', blog.id);
   };
 
   if (loading) {

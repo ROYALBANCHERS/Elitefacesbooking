@@ -33,6 +33,21 @@ const HomePage: React.FC = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAllCelebrities, setShowAllCelebrities] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [adminClickCount, setAdminClickCount] = useState(0);
+
+  // Secret admin access - click logo 5 times
+  const handleLogoClick = () => {
+    setAdminClickCount(prev => {
+      const newCount = prev + 1;
+      if (newCount >= 5) {
+        setShowAdminPanel(true);
+        return 0;
+      }
+      return newCount;
+    });
+    navigateTo('home');
+    setShowMobileMenu(false);
+  };
 
   // Initialize welcome modal state from localStorage
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
@@ -123,10 +138,7 @@ const HomePage: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3" role="navigation" aria-label="Main Navigation">
         <div className="container mx-auto flex justify-between items-center">
           <button
-            onClick={() => {
-              navigateTo('home');
-              setShowMobileMenu(false);
-            }}
+            onClick={handleLogoClick}
             className="flex items-center space-x-3 group logo-glow transition-all hover:opacity-80"
             aria-label="Elite Faces Booking - Home"
           >
@@ -164,8 +176,9 @@ const HomePage: React.FC = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="md:hidden text-white p-2"
+            className="md:hidden text-white p-2 z-50 relative"
             aria-label="Toggle menu"
+            style={{ minWidth: '44px', minHeight: '44px' }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {showMobileMenu ? (
@@ -179,11 +192,11 @@ const HomePage: React.FC = () => {
 
         {/* Mobile Menu */}
         {showMobileMenu && (
-          <div className="md:hidden glass border-t border-white/10 mt-3 py-4 px-6">
+          <div className="md:hidden glass border-t border-white/10 mt-3 py-4 px-6 absolute top-full left-0 right-0 z-40">
             <div className="flex flex-col space-y-4">
               <button
                 onClick={() => handleNavigateAndScroll('home', 'roster')}
-                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2 text-lg font-medium"
               >
                 TALENT ROSTER
               </button>
@@ -192,7 +205,7 @@ const HomePage: React.FC = () => {
                   navigateTo('services');
                   setShowMobileMenu(false);
                 }}
-                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2 text-lg font-medium"
               >
                 SERVICES
               </button>
@@ -201,11 +214,13 @@ const HomePage: React.FC = () => {
                   navigateTo('about');
                   setShowMobileMenu(false);
                 }}
-                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2 text-lg font-medium"
               >
                 ABOUT
               </button>
-              <BlogMenu />
+              <div className="py-2">
+                <BlogMenu />
+              </div>
               {customSections.map(section => (
                 <button
                   key={section}
@@ -213,7 +228,7 @@ const HomePage: React.FC = () => {
                     navigateTo('blog-listing', section);
                     setShowMobileMenu(false);
                   }}
-                  className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+                  className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2 text-lg font-medium"
                 >
                   {section.toUpperCase()}
                 </button>
@@ -223,7 +238,7 @@ const HomePage: React.FC = () => {
                   navigateTo('contact');
                   setShowMobileMenu(false);
                 }}
-                className="btn-gold text-slate-950 px-6 py-2 rounded-lg font-bold text-center"
+                className="btn-gold text-slate-950 px-6 py-3 rounded-lg font-bold text-center text-lg mt-2"
               >
                 CONTACT
               </button>
