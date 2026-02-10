@@ -20,9 +20,9 @@ jobs:
         env:
           NODE_ENV: development
       - name: Verify vite installation
-        run: npx vite --version
+        run: ./node_modules/.bin/vite --version
       - name: Build
-        run: npx vite build
+        run: ./node_modules/.bin/vite build
         env:
           NODE_ENV: production
       - uses: actions/upload-pages-artifact@v3
