@@ -14,7 +14,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - uses: actions/configure-pages@v4
       - run: npm install
+      - name: Fix node_modules permissions
+        run: chmod -R +x node_modules/.bin/
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
