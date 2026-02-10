@@ -133,6 +133,116 @@ export const CELEBRITIES: Celebrity[] = [
     priceRange: 'Contact us',
     followers: '45M+',
     expertise: ['Fashion Retail', 'High Energy Ads', 'Product Launches']
+  },
+  {
+    id: '13',
+    name: 'Arbaaz Khan',
+    category: 'Bollywood',
+    bio: 'Versatile actor and film producer known for his roles in Bollywood and his production ventures.',
+    rating: 4.5,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Arbaaz_Khan_at_the_launch_of_%27India%27s_Most_Wanted%27_trailer.jpg/800px-Arbaaz_Khan_at_the_launch_of_%27India%27s_Most_Wanted%27_trailer.jpg',
+    priceRange: 'Contact us',
+    followers: '3.5M+',
+    expertise: ['Film Production', 'Brand Endorsement', 'Event Appearances']
+  },
+  {
+    id: '14',
+    name: 'Isha Koppikar',
+    category: 'Bollywood',
+    bio: 'Actress and model known for her performances in Bollywood and South Indian films. Also a former Miss India.',
+    rating: 4.6,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Isha_Koppikar.jpg/800px-Isha_Koppikar.jpg',
+    priceRange: 'Contact us',
+    followers: '1.2M+',
+    expertise: ['Fashion Shows', 'Brand Ambassador', 'TV Appearances']
+  },
+  {
+    id: '15',
+    name: 'Sonali Bendre',
+    category: 'Bollywood',
+    bio: 'Graceful actress and former model known for her memorable performances in the 90s and early 2000s.',
+    rating: 4.8,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sonali_Bendre_in_2019.jpg/800px-Sonali_Bendre_in_2019.jpg',
+    priceRange: 'Contact us',
+    followers: '5.2M+',
+    expertise: ['Lifestyle Branding', 'Wellness Campaigns', 'TV Shows']
+  },
+  {
+    id: '16',
+    name: 'Amrita Rao',
+    category: 'Bollywood',
+    bio: 'Sweet and charming actress known for her girl-next-door roles in romantic films.',
+    rating: 4.7,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Amrita_Rao_promoting_Vivah.jpg/800px-Amrita_Rao_promoting_Vivah.jpg',
+    priceRange: 'Contact us',
+    followers: '3.8M+',
+    expertise: ['Beauty Brands', 'Fashion Endorsements', 'Lifestyle Products']
+  },
+  {
+    id: '17',
+    name: 'Ameesha Patel',
+    category: 'Bollywood',
+    bio: 'Talented actress who made a stunning debut and continues to captivate audiences with her performances.',
+    rating: 4.6,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Ameesha_Patel_in_2018.jpg/800px-Ameesha_Patel_in_2018.jpg',
+    priceRange: 'Contact us',
+    followers: '4.1M+',
+    expertise: ['Brand Promotions', 'Event Appearances', 'Product Launches']
+  },
+  {
+    id: '18',
+    name: 'Bhagyashree',
+    category: 'Bollywood',
+    bio: 'Beloved actress known for her iconic debut and timeless beauty. A fitness enthusiast and wellness advocate.',
+    rating: 4.8,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bhagyashree_at_the_launch_of_%27Jai_Maa_Durga%27_trailer.jpg/800px-Bhagyashree_at_the_launch_of_%27Jai_Maa_Durga%27_trailer.jpg',
+    priceRange: 'Contact us',
+    followers: '2.8M+',
+    expertise: ['Wellness & Fitness', 'Family Brands', 'Lifestyle Products']
+  },
+  {
+    id: '19',
+    name: 'Neha Dhupia',
+    category: 'Bollywood',
+    bio: 'Actress, model, and former beauty queen known for her bold roles and strong opinions.',
+    rating: 4.7,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Neha_Dhupia_at_64th_Filmfare_Awards.jpg/800px-Neha_Dhupia_at_64th_Filmfare_Awards.jpg',
+    priceRange: 'Contact us',
+    followers: '6.5M+',
+    expertise: ['Fashion Brands', 'Talk Shows', 'Women Empowerment Campaigns']
+  },
+  {
+    id: '20',
+    name: 'Neelam Kothari',
+    category: 'Bollywood',
+    bio: 'Actress and jewelry designer known for her charming performances and elegant jewelry line.',
+    rating: 4.5,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Neelam_Kothari_Sonpari.jpg/800px-Neelam_Kothari_Sonpari.jpg',
+    priceRange: 'Contact us',
+    followers: '1.5M+',
+    expertise: ['Jewelry Design', 'Fashion Brands', 'Lifestyle Products']
+  },
+  {
+    id: '21',
+    name: 'Jaya Prada',
+    category: 'Bollywood',
+    bio: 'Legendary actress and politician known for her exceptional dancing skills and graceful performances.',
+    rating: 4.9,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Jaya_Prada_at_Cine_Maa_Awards.jpg/800px-Jaya_Prada_at_Cine_Maa_Awards.jpg',
+    priceRange: 'Contact us',
+    followers: '4.2M+',
+    expertise: ['Classical Dance', 'Political Campaigns', 'Brand Ambassador']
+  },
+  {
+    id: '22',
+    name: 'Pooja Banerjee',
+    category: 'Bollywood',
+    bio: 'Television and film actress known for her versatile acting in popular TV shows and web series.',
+    rating: 4.4,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Pooja_Banerjee.jpg/800px-Pooja_Banerjee.jpg',
+    priceRange: 'Contact us',
+    followers: '850K+',
+    expertise: ['TV Shows', 'Web Series', 'Brand Endorsements']
   }
 ];
 

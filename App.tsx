@@ -27,6 +27,7 @@ const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showAllCelebrities, setShowAllCelebrities] = useState(false);
 
   // Initialize welcome modal state from localStorage
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
@@ -158,8 +159,9 @@ const HomePage: React.FC = () => {
             <div className="max-w-xl text-center md:text-left">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">The Premier Roster</h2>
               <p className="text-slate-400 italic">Browse our curated collection of India's most sought-after celebrities, actors, influencers, and entertainment talent available for booking.</p>
+              <p className="text-yellow-500 font-semibold mt-2">{celebrities.length}+ Celebrities Available</p>
             </div>
-            
+
             <div className="w-full md:w-auto flex flex-col items-center md:items-end space-y-6">
               {/* Search Bar */}
               <div className="relative w-full md:w-80 group">
@@ -196,8 +198,9 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
+          {/* Display celebrities - limited by default */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-            {filteredCelebrities.map(celeb => (
+            {(showAllCelebrities ? filteredCelebrities : filteredCelebrities.slice(0, 8)).map(celeb => (
               <CelebrityCard
                 key={celeb.id}
                 celebrity={celeb}
@@ -205,7 +208,31 @@ const HomePage: React.FC = () => {
               />
             ))}
           </div>
-          
+
+          {/* View All Button */}
+          {filteredCelebrities.length > 8 && !showAllCelebrities && (
+            <div className="text-center mt-12">
+              <button
+                onClick={() => setShowAllCelebrities(true)}
+                className="glass border border-yellow-500/30 px-10 py-4 rounded-xl font-bold text-lg hover:bg-yellow-500/10 transition-all"
+              >
+                <i className="fas fa-users mr-2"></i>View All Celebrities ({filteredCelebrities.length})
+              </button>
+            </div>
+          )}
+
+          {/* Show Less Button */}
+          {showAllCelebrities && filteredCelebrities.length > 8 && (
+            <div className="text-center mt-12">
+              <button
+                onClick={() => setShowAllCelebrities(false)}
+                className="glass border border-white/20 px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/5 transition-all"
+              >
+                <i className="fas fa-chevron-up mr-2"></i>Show Less
+              </button>
+            </div>
+          )}
+
           {filteredCelebrities.length === 0 && (
             <div className="text-center py-24 glass rounded-3xl border-dashed border-2 border-white/5">
               <div className="mb-4 text-slate-600">
