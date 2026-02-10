@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
 import { Celebrity, Category } from './types';
 import CelebrityCard from './components/CelebrityCard';
@@ -27,6 +27,28 @@ const HomePage: React.FC = () => {
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const { navigateTo } = useRouter();
+
+  // Memoized callbacks to prevent unnecessary re-renders
+  const handleBookCelebrity = useCallback((celeb: Celebrity) => {
+    setBookingCelebrity(celeb);
+  }, []);
+
+  const handleCloseBooking = useCallback(() => {
+    setBookingCelebrity(null);
+  }, []);
+
+  const handleCloseWelcome = useCallback(() => {
+    setShowWelcomeModal(false);
+    sessionStorage.setItem('elitefaces_visited', 'true');
+  }, []);
+
+  const handleCategoryChange = useCallback((cat: Category | 'All') => {
+    setSelectedCategory(cat);
+  }, []);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   // Update page title and meta tags for SEO
   React.useEffect(() => {
@@ -125,11 +147,11 @@ const HomePage: React.FC = () => {
             <div className="w-full md:w-auto flex flex-col items-center md:items-end space-y-6">
               {/* Search Bar */}
               <div className="relative w-full md:w-80 group">
-                <input 
-                  type="text" 
-                  placeholder="Search celebrity name..." 
+                <input
+                  type="text"
+                  placeholder="Search celebrity name..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full bg-slate-900/50 border border-white/10 glass px-5 py-3 rounded-full text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
                 />
                 <svg className="w-5 h-5 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 group-focus-within:text-yellow-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,16 +161,16 @@ const HomePage: React.FC = () => {
 
               {/* Category Pills */}
               <div className="flex flex-wrap justify-center md:justify-end gap-2">
-                <button 
-                  onClick={() => setSelectedCategory('All')}
+                <button
+                  onClick={() => handleCategoryChange('All')}
                   className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${selectedCategory === 'All' ? 'bg-yellow-500 text-slate-950' : 'bg-slate-900 text-slate-400 hover:text-white'}`}
                 >
                   All
                 </button>
                 {CATEGORIES.map(cat => (
-                  <button 
+                  <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => handleCategoryChange(cat)}
                     className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${selectedCategory === cat ? 'bg-yellow-500 text-slate-950' : 'bg-slate-900 text-slate-400 hover:text-white'}`}
                   >
                     {cat}
@@ -160,10 +182,10 @@ const HomePage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             {filteredCelebrities.map(celeb => (
-              <CelebrityCard 
-                key={celeb.id} 
-                celebrity={celeb} 
-                onBook={() => setBookingCelebrity(celeb)}
+              <CelebrityCard
+                key={celeb.id}
+                celebrity={celeb}
+                onBook={handleBookCelebrity}
               />
             ))}
           </div>
@@ -269,19 +291,16 @@ const HomePage: React.FC = () => {
 
       {/* Welcome Modal */}
       {showWelcomeModal && (
-        <WelcomeModal 
-          onClose={() => {
-            setShowWelcomeModal(false);
-            sessionStorage.setItem('elitefaces_visited', 'true');
-          }} 
+        <WelcomeModal
+          onClose={handleCloseWelcome}
         />
       )}
 
       {/* Booking Modal */}
       {bookingCelebrity && (
-        <BookingModal 
-          celebrity={bookingCelebrity} 
-          onClose={() => setBookingCelebrity(null)} 
+        <BookingModal
+          celebrity={bookingCelebrity}
+          onClose={handleCloseBooking}
         />
       )}
     </div>
