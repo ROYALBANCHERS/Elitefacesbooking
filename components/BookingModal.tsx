@@ -44,10 +44,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
         return;
       }
 
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Sending booking request:', {
+        celebrity: celebrity.name,
+        email: formData.email,
+        eventType: formData.eventType
+      });
+
       // Send email to the admin
-      await emailjs.send(
+      const response = await emailjs.send(
         'service_em3wlf9',
-        'template_5rpfhd7', // Booking template
+        'template_5rpfhd7',
         {
           from_name: formData.fullName,
           from_email: formData.email,
@@ -55,18 +69,59 @@ const BookingModal: React.FC<BookingModalProps> = ({ celebrity, onClose }) => {
           event_type: formData.eventType,
           event_date: formData.eventDate,
           event_location: formData.eventLocation,
-          requirements: formData.requirements,
-          category: celebrity.category
+          requirements: formData.requirements || 'N/A',
+          category: celebrity.category,
+          reply_to: 'elitefacesbooking@gmail.com'
         }
       );
+
+      console.log('Email sent successfully:', response);
+
+      // Also send confirmation email to the user
+      try {
+        await emailjs.send(
+          'service_em3wlf9',
+          'template_5rpfhd7',
+          {
+            to_email: formData.email,
+            from_name: 'Elite Faces Booking',
+            celebrity_name: celebrity.name,
+            event_type: formData.eventType,
+            event_date: formData.eventDate,
+            event_location: formData.eventLocation,
+            requirements: formData.requirements || 'N/A'
+          }
+        );
+      } catch (confirmEmailError) {
+        console.warn('Confirmation email failed, but booking was received:', confirmEmailError);
+      }
 
       setSuccess(true);
       setTimeout(() => {
         onClose();
       }, 2000);
-    } catch (err) {
-      console.error('Email error:', err);
-      setError('Failed to submit request. Please try again.');
+    } catch (err: any) {
+      console.error('Email error details:', {
+        message: err?.message,
+        status: err?.status,
+        text: err?.text,
+        response: err?.response
+      });
+
+      // Provide more specific error messages
+      let errorMessage = 'Failed to submit request. ';
+
+      if (err?.status === 400) {
+        errorMessage += 'Invalid request. Please check all fields.';
+      } else if (err?.status === 401 || err?.status === 403) {
+        errorMessage += 'Authentication error. Please contact support.';
+      } else if (err?.message?.includes('network')) {
+        errorMessage += 'Network error. Please check your connection.';
+      } else {
+        errorMessage += 'Please try again or contact us directly at elitefacesbooking@gmail.com';
+      }
+
+      setError(errorMessage);
       setLoading(false);
     }
   };

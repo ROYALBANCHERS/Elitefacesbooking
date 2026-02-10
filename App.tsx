@@ -7,6 +7,7 @@ import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
 import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
+import AdminPanel from './components/AdminPanel';
 import { RouterProvider, useRouter, Page } from './components/Router';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
@@ -26,6 +27,8 @@ const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [celebrities, setCelebrities] = useState(CELEBRITIES);
   const { navigateTo } = useRouter();
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -68,12 +71,12 @@ const HomePage: React.FC = () => {
   }, []);
 
   const filteredCelebrities = useMemo(() => {
-    return CELEBRITIES.filter(c => {
+    return celebrities.filter(c => {
       const matchesCategory = selectedCategory === 'All' || c.category === selectedCategory;
       const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, celebrities]);
 
   return (
     <div className="min-h-screen">
@@ -120,9 +123,9 @@ const HomePage: React.FC = () => {
           <div className="flex justify-center mb-8 animate-in fade-in zoom-in duration-1000">
              <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
           </div>
-          <span className="text-yellow-500 font-bold tracking-[0.5em] uppercase text-sm mb-6 block animate-in fade-in slide-in-from-top-4 duration-1000">India's Leading Talent Agency</span>
-          <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight">
-            Elevate Your Brand with <br />
+          <span className="text-yellow-500 font-bold tracking-[0.3em] uppercase text-xs sm:text-sm mb-4 sm:mb-6 block animate-in fade-in slide-in-from-top-4 duration-1000">India's Leading Talent Agency</span>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 sm:mb-8 leading-tight hero-title">
+            Elevate Your Brand with <br className="sm:hidden" />
             <span className="gold-gradient serif">Iconic Faces</span>
           </h1>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-12">
@@ -229,27 +232,34 @@ const HomePage: React.FC = () => {
             <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
               Delhi's leading talent management agency. Book top Indian celebrities, actors, influencers, anchors, magicians, and entertainment talent for events, endorsements, and brand collaborations.
             </p>
-            <div className="flex justify-center md:justify-start space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">IG</a>
-              <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">LN</a>
-              <a href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors">X</a>
-
-<a 
-  href="https://wa.me/919990996091" 
-  target="_blank" 
-  className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors"
->
-  <i className="fab fa-whatsapp"></i> {/* Ya aapka icon/text */}
-</a>
-
-<a 
-  href="https://wa.me/917678683436" 
-  target="_blank" 
-  className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors"
->
-  <i className="fab fa-whatsapp"></i> {/* Ya aapka icon/text */}
-</a>
-
+            <div className="flex justify-center md:justify-start space-x-3 sm:space-x-4">
+              <a href="https://www.instagram.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="Instagram">
+                <i className="fab fa-instagram"></i>
+              </a>
+              <a href="https://www.linkedin.com/company/elitefaces" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="LinkedIn">
+                <i className="fab fa-linkedin-in"></i>
+              </a>
+              <a href="https://twitter.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="Twitter/X">
+                <i className="fab fa-x-twitter"></i>
+              </a>
+              <a
+                href="https://wa.me/919990996091"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
+                aria-label="WhatsApp 1"
+              >
+                <i className="fab fa-whatsapp text-lg"></i>
+              </a>
+              <a
+                href="https://wa.me/917678683436"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
+                aria-label="WhatsApp 2"
+              >
+                <i className="fab fa-whatsapp text-lg"></i>
+              </a>
             </div>
           </div>
           <nav>
@@ -257,12 +267,28 @@ const HomePage: React.FC = () => {
             <ul className="space-y-4 text-slate-400">
               <li>
                 <a href="mailto:elitefacesbooking@gmail.com" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                  <i className="fas fa-envelope text-sm"></i>
                   <span>elitefacesbooking@gmail.com</span>
                 </a>
               </li>
-              <li><a href="tel:+919990996091" className="hover:text-yellow-500 transition-colors">+91 9990996091</a></li>
-              <li><a href="https://wa.me/919990996091" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">WhatsApp Chat</a></li>
+              <li>
+                <a href="tel:+919990996091" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
+                  <i className="fas fa-phone text-sm"></i>
+                  <span>+91 9990996091</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/919990996091" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
+                  <i className="fab fa-whatsapp text-sm"></i>
+                  <span>WhatsApp Chat 1</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/917678683436" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
+                  <i className="fab fa-whatsapp text-sm"></i>
+                  <span>WhatsApp Chat 2</span>
+                </a>
+              </li>
             </ul>
           </nav>
           <nav>
@@ -284,8 +310,19 @@ const HomePage: React.FC = () => {
             </ul>
           </nav>
         </div>
-        <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/5 text-center text-slate-500 text-xs tracking-widest uppercase">
-          © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
+        <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/5">
+          <div className="text-center text-slate-500 text-xs tracking-widest uppercase mb-4">
+            © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
+          </div>
+          <div className="text-center">
+            <button
+              onClick={() => setShowAdminPanel(true)}
+              className="text-slate-600 hover:text-slate-500 text-xs transition-colors"
+              aria-label="Admin Login"
+            >
+              <i className="fas fa-lock mr-1"></i>Admin
+            </button>
+          </div>
         </div>
       </footer>
 
@@ -301,6 +338,15 @@ const HomePage: React.FC = () => {
         <BookingModal
           celebrity={bookingCelebrity}
           onClose={handleCloseBooking}
+        />
+      )}
+
+      {/* Admin Panel Modal */}
+      {showAdminPanel && (
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          onUpdateCelebrities={setCelebrities}
+          celebrities={celebrities}
         />
       )}
     </div>
