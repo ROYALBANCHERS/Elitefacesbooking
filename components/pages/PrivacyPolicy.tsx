@@ -1,9 +1,18 @@
 import React from 'react';
+import { useRouter } from '../Router';
 
 const PrivacyPolicy: React.FC = () => {
+  const { navigateTo } = useRouter();
+
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-6 max-w-4xl">
+        <button
+          onClick={() => navigateTo('home')}
+          className="text-yellow-500 hover:text-yellow-400 mb-6 flex items-center space-x-2"
+        >
+          <span>←</span> <span>Back to Home</span>
+        </button>
         <h1 className="text-5xl font-bold mb-4 gold-gradient">Privacy Policy</h1>
         <p className="text-slate-400 mb-12">Last updated: February 2024</p>
 

@@ -337,6 +337,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               <i className="fas fa-blog mr-2"></i>Blog Posts
             </button>
             <button
+              onClick={() => setActiveTab('pages')}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'pages' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-file-alt mr-2"></i>Custom Pages
+            </button>
+            <button
               onClick={() => setActiveTab('images')}
               className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
@@ -628,6 +634,156 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                     </form>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'pages' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">Custom Pages Management</h3>
+                    <p className="text-slate-400 text-sm">Create and manage custom pages for your website</p>
+                  </div>
+                  <button onClick={() => {
+                    const newPage: PageContent = {
+                      id: Date.now().toString(),
+                      title: 'New Page',
+                      content: '<p>Add your page content here...</p>',
+                      slug: `page-${Date.now()}`
+                    };
+                    setEditingPage(newPage);
+                  }} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                    <i className="fas fa-plus mr-2"></i>Create New Page
+                  </button>
+                </div>
+
+                {!editingPage ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pageContents.length === 0 ? (
+                      <div className="col-span-full text-center py-12 glass rounded-xl">
+                        <i className="fas fa-file-alt text-6xl text-slate-700 mb-4"></i>
+                        <h4 className="text-xl font-semibold mb-2">No Custom Pages Yet</h4>
+                        <p className="text-slate-400">Click "Create New Page" to add your first custom page</p>
+                      </div>
+                    ) : (
+                      pageContents.map((page) => (
+                        <div key={page.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">{page.title}</h4>
+                              <p className="text-xs text-slate-500">/{page.slug}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => setEditingPage(page)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button onClick={() => {
+                                if (window.confirm('Delete this page?')) {
+                                  const updated = pageContents.filter(p => p.id !== page.id);
+                                  setPageContents(updated);
+                                  localStorage.setItem('page_contents', JSON.stringify(updated));
+                                }
+                              }} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-slate-500 text-xs line-clamp-2">
+                            {page.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-semibold">{pageContents.find(p => p.id === editingPage.id) ? 'Edit Page' : 'Create New Page'}</h3>
+                      <button onClick={() => setEditingPage(null)} className="text-slate-400 hover:text-white">
+                        <i className="fas fa-times mr-2"></i>Cancel
+                      </button>
+                    </div>
+
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const existingIndex = pageContents.findIndex(p => p.id === editingPage.id);
+                      let updated;
+                      if (existingIndex >= 0) {
+                        updated = [...pageContents];
+                        updated[existingIndex] = editingPage;
+                      } else {
+                        updated = [...pageContents, editingPage];
+                      }
+                      setPageContents(updated);
+                      localStorage.setItem('page_contents', JSON.stringify(updated));
+                      setEditingPage(null);
+                      showToastMessage('Page saved successfully!', 'success');
+                    }} className="space-y-4">
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Page Title</label>
+                        <input
+                          type="text"
+                          value={editingPage.title}
+                          onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">URL Slug (no spaces, use hyphens)</label>
+                        <input
+                          type="text"
+                          value={editingPage.slug}
+                          onChange={(e) => setEditingPage({ ...editingPage, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          placeholder="my-custom-page"
+                          required
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                          <i className="fas fa-info-circle mr-1"></i>
+                          Page will be accessible at: /{editingPage.slug}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Page Content (HTML supported)</label>
+                        <textarea
+                          value={editingPage.content}
+                          onChange={(e) => setEditingPage({ ...editingPage, content: e.target.value })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          rows={12}
+                          placeholder="<h1>Your Page Title</h1><p>Your content here...</p>"
+                          required
+                        />
+                      </div>
+
+                      <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                        <p className="text-sm text-slate-400 mb-2">Preview:</p>
+                        <div className="bg-white rounded-lg p-4 text-slate-900 max-h-48 overflow-y-auto">
+                          <div dangerouslySetInnerHTML={{ __html: editingPage.content }} />
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button type="submit" className="flex-1 py-3 btn-gold text-slate-950 font-bold rounded-lg">
+                          <i className="fas fa-save mr-2"></i>Save Page
+                        </button>
+                        <button type="button" onClick={() => setEditingPage(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Info Box */}
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mt-6">
+                  <p className="text-sm text-blue-300">
+                    <i className="fas fa-info-circle mr-2"></i>
+                    <strong>Note:</strong> Custom pages created here are stored in localStorage. To access them, you'll need to add routing logic to your App.tsx.
+                  </p>
+                </div>
               </div>
             )}
 
