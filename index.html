@@ -49,18 +49,29 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      
-      // Default privacy settings as per latest policy
+
+      // Consent configuration - analytics granted by default
       gtag('consent', 'default', {
         'ad_user_data': 'denied',
         'ad_personalization': 'denied',
         'ad_storage': 'denied',
-        'analytics_storage': 'denied',
+        'analytics_storage': 'granted',
         'wait_for_update': 500
       });
 
       gtag('js', new Date());
-      gtag('config', 'G-PQV3LQQZ6J');
+      gtag('config', 'G-PQV3LQQZ6J', {
+        'anonymize_ip': true,
+        'send_page_view': true
+      });
+
+      // Track page views on route changes
+      window.trackPageView = (url) => {
+        gtag('config', 'G-PQV3LQQZ6J', {
+          'page_path': url,
+          'send_page_view': true
+        });
+      };
     </script>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3507041827923673" crossorigin="anonymous"></script>

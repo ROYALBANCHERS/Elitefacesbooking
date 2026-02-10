@@ -5,8 +5,17 @@ import { Celebrity } from '../types';
 const ADMIN_CREDENTIALS = {
   username: 'Rishabhkumar023',
   email: 'growthing868@gmail.com',
-  password: 'admin123' // Default password, should be changed in production
+  password: 'admin123'
 };
+
+// Page content interface
+interface PageContent {
+  id: string;
+  title: string;
+  content: string;
+  section: string;
+  imageUrl?: string;
+}
 
 // Blog content interface
 interface BlogPost {
@@ -30,17 +39,42 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images'>('celebrities');
+  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images' | 'pages' | 'settings'>('celebrities');
   const [editingCelebrity, setEditingCelebrity] = useState<Celebrity | null>(null);
   const [celebrityList, setCelebrityList] = useState<Celebrity[]>(celebrities);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [pageContents, setPageContents] = useState<PageContent[]>([]);
+  const [editingPageContent, setEditingPageContent] = useState<PageContent | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [selectedPageSection, setSelectedPageSection] = useState('all');
+
+  // Load page contents from localStorage on mount
+  useEffect(() => {
+    const savedContents = localStorage.getItem('elitefaces_page_contents');
+    if (savedContents) {
+      setPageContents(JSON.parse(savedContents));
+    } else {
+      // Initialize with default content
+      const defaultContents: PageContent[] = [
+        { id: 'hero-title', title: 'Hero Title', content: 'Elevate Your Brand with Iconic Faces', section: 'home' },
+        { id: 'hero-subtitle', title: 'Hero Subtitle', content: "India's Leading Talent Agency", section: 'home' },
+        { id: 'about-story', title: 'About Story', content: 'EliteFacesBooking was founded with a simple vision: to revolutionize the way brands connect with celebrity talent.', section: 'about' },
+        { id: 'services-intro', title: 'Services Introduction', content: 'Comprehensive talent management and celebrity booking services tailored to your brand\'s unique needs', section: 'services' },
+      ];
+      setPageContents(defaultContents);
+      localStorage.setItem('elitefaces_page_contents', JSON.stringify(defaultContents));
+    }
+
+    const savedBlogs = localStorage.getItem('elitefaces_blogs');
+    if (savedBlogs) {
+      setBlogPosts(JSON.parse(savedBlogs));
+    }
+  }, []);
 
   useEffect(() => {
-    // Check if already authenticated in session
     const auth = sessionStorage.getItem('admin_auth');
     if (auth === 'true') {
       setIsAuthenticated(true);
@@ -73,6 +107,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setPassword('');
   };
 
+  // Celebrity management
   const handleEditCelebrity = (celebrity: Celebrity) => {
     setEditingCelebrity(celebrity);
   };
@@ -124,7 +159,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     }
   };
 
-  // Blog management functions
+  // Blog management
   const handleAddBlog = () => {
     const newBlog: BlogPost = {
       id: Date.now().toString(),
@@ -146,6 +181,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
+      localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
       if (onUpdateBlogs) onUpdateBlogs(updated);
       showToastMessage('Blog deleted successfully', 'success');
     }
@@ -159,6 +195,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       b.id === editingBlog.id ? editingBlog : b
     );
     setBlogPosts(updated);
+    localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
     if (onUpdateBlogs) onUpdateBlogs(updated);
     setEditingBlog(null);
     showToastMessage('Blog updated successfully!', 'success');
@@ -172,6 +209,58 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       });
     }
   };
+
+  // Page content management
+  const handleAddPageContent = () => {
+    const newContent: PageContent = {
+      id: Date.now().toString(),
+      title: 'New Content',
+      content: 'Add content here...',
+      section: selectedPageSection === 'all' ? 'home' : selectedPageSection
+    };
+    setPageContents([...pageContents, newContent]);
+    setEditingPageContent(newContent);
+    localStorage.setItem('elitefaces_page_contents', JSON.stringify([...pageContents, newContent]));
+  };
+
+  const handleEditPageContent = (content: PageContent) => {
+    setEditingPageContent(content);
+  };
+
+  const handleDeletePageContent = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this content?')) {
+      const updated = pageContents.filter(c => c.id !== id);
+      setPageContents(updated);
+      localStorage.setItem('elitefaces_page_contents', JSON.stringify(updated));
+      showToastMessage('Content deleted successfully', 'success');
+    }
+  };
+
+  const handleSavePageContent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPageContent) return;
+
+    const updated = pageContents.map(c =>
+      c.id === editingPageContent.id ? editingPageContent : c
+    );
+    setPageContents(updated);
+    localStorage.setItem('elitefaces_page_contents', JSON.stringify(updated));
+    setEditingPageContent(null);
+    showToastMessage('Content updated successfully!', 'success');
+  };
+
+  const updatePageContentField = (field: keyof PageContent, value: any) => {
+    if (editingPageContent) {
+      setEditingPageContent({
+        ...editingPageContent,
+        [field]: value
+      });
+    }
+  };
+
+  const filteredPageContents = selectedPageSection === 'all'
+    ? pageContents
+    : pageContents.filter(c => c.section === selectedPageSection);
 
   if (!isAuthenticated) {
     return (
@@ -248,7 +337,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
-        <div className="relative glass w-full max-w-6xl h-[90vh] rounded-3xl overflow-hidden flex flex-col">
+        <div className="relative glass w-full max-w-7xl h-[90vh] rounded-3xl overflow-hidden flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-white/10 flex justify-between items-center">
             <div className="flex items-center space-x-3">
@@ -257,7 +346,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
               <div>
                 <h2 className="text-xl font-bold">Admin Panel</h2>
-                <p className="text-slate-400 text-sm">Manage celebrities & content</p>
+                <p className="text-slate-400 text-sm">Manage all content & settings</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -271,24 +360,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-white/10 overflow-x-auto">
             <button
               onClick={() => setActiveTab('celebrities')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-users mr-2"></i>Celebrities
             </button>
             <button
+              onClick={() => setActiveTab('pages')}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'pages' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-file-alt mr-2"></i>Page Content
+            </button>
+            <button
               onClick={() => setActiveTab('blogs')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-blog mr-2"></i>Blog Posts
             </button>
             <button
               onClick={() => setActiveTab('images')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-images mr-2"></i>Images
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-cog mr-2"></i>Settings
             </button>
           </div>
 
@@ -419,6 +520,129 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                           <i className="fas fa-save mr-2"></i>Save Changes
                         </button>
                         <button type="button" onClick={() => setEditingCelebrity(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'pages' && (
+              <div className="space-y-6">
+                {!editingPageContent ? (
+                  <>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                      <h3 className="text-lg font-semibold">Manage Page Content</h3>
+                      <div className="flex gap-3">
+                        <select
+                          value={selectedPageSection}
+                          onChange={(e) => setSelectedPageSection(e.target.value)}
+                          className="bg-slate-800 border border-white/10 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500"
+                        >
+                          <option value="all">All Sections</option>
+                          <option value="home">Home</option>
+                          <option value="about">About</option>
+                          <option value="services">Services</option>
+                          <option value="contact">Contact</option>
+                          <option value="portfolio">Portfolio</option>
+                          <option value="hero">Hero Section</option>
+                        </select>
+                        <button onClick={handleAddPageContent} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                          <i className="fas fa-plus mr-2"></i>Add Content
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredPageContents.map((content) => (
+                        <div key={content.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <span className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">{content.section}</span>
+                              <h4 className="font-semibold mt-2">{content.title}</h4>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => handleEditPageContent(content)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button onClick={() => handleDeletePageContent(content.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-slate-400 text-sm line-clamp-3">{content.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="max-w-2xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-semibold">Edit Page Content</h3>
+                      <button onClick={() => setEditingPageContent(null)} className="text-slate-400 hover:text-white">
+                        <i className="fas fa-times mr-2"></i>Cancel
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSavePageContent} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Title</label>
+                          <input
+                            type="text"
+                            value={editingPageContent.title}
+                            onChange={(e) => updatePageContentField('title', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Section</label>
+                          <select
+                            value={editingPageContent.section}
+                            onChange={(e) => updatePageContentField('section', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          >
+                            <option value="home">Home</option>
+                            <option value="about">About</option>
+                            <option value="services">Services</option>
+                            <option value="contact">Contact</option>
+                            <option value="portfolio">Portfolio</option>
+                            <option value="hero">Hero Section</option>
+                            <option value="footer">Footer</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Content (HTML supported)</label>
+                        <textarea
+                          value={editingPageContent.content}
+                          onChange={(e) => updatePageContentField('content', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          rows={8}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Image URL (Optional)</label>
+                        <input
+                          type="text"
+                          value={editingPageContent.imageUrl || ''}
+                          onChange={(e) => updatePageContentField('imageUrl', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button type="submit" className="flex-1 py-3 btn-gold text-slate-950 font-bold rounded-lg">
+                          <i className="fas fa-save mr-2"></i>Save Content
+                        </button>
+                        <button type="button" onClick={() => setEditingPageContent(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
                           Cancel
                         </button>
                       </div>
@@ -565,7 +789,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                   <p className="text-slate-400 text-sm mb-6">Upload and manage images for celebrities, blogs, and modals. Images are stored as URLs.</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Image URL Helper */}
                     <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
                       <h4 className="font-semibold mb-4 flex items-center">
                         <i className="fas fa-link text-yellow-500 mr-2"></i>Add Image URL
@@ -588,7 +811,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                       </div>
                     </div>
 
-                    {/* Image Hosting Info */}
                     <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
                       <h4 className="font-semibold mb-4 flex items-center">
                         <i className="fas fa-cloud text-blue-500 mr-2"></i>Image Hosting
@@ -607,15 +829,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                           <i className="fas fa-check text-green-500 mr-2"></i>
                           <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500">Cloudinary</a>
                         </li>
-                        <li className="flex items-center text-slate-300">
-                          <i className="fas fa-check text-green-500 mr-2"></i>
-                          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500">GitHub (via repo)</a>
-                        </li>
                       </ul>
                     </div>
                   </div>
 
-                  {/* Current Images in Use */}
                   <div className="mt-6">
                     <h4 className="font-semibold mb-4 flex items-center">
                       <i className="fas fa-photo-video text-purple-500 mr-2"></i>Current Images in Use
@@ -636,7 +853,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                     </div>
                   </div>
 
-                  {/* Logo Images */}
                   <div className="mt-6">
                     <h4 className="font-semibold mb-4 flex items-center">
                       <i className="fas fa-crown text-yellow-500 mr-2"></i>Brand Images
@@ -647,12 +863,69 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         <p className="text-sm font-medium">Main Logo</p>
                         <p className="text-xs text-slate-500">LOGO.PNG</p>
                       </div>
-                      <div className="bg-slate-900/50 border border-white/10 rounded-xl p-4 text-center">
-                        <img src="LOGO.png" alt="Logo Alt" className="w-20 h-20 mx-auto rounded-lg object-cover mb-2" />
-                        <p className="text-sm font-medium">Logo Alt</p>
-                        <p className="text-xs text-slate-500">LOGO.png</p>
-                      </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
+
+                <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                  <h4 className="font-semibold mb-4">Change Password</h4>
+                  <form className="space-y-4">
+                    <div>
+                      <label className="text-sm text-slate-400 mb-1 block">Current Password</label>
+                      <input
+                        type="password"
+                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-slate-400 mb-1 block">New Password</label>
+                      <input
+                        type="password"
+                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                      />
+                    </div>
+                    <button type="button" className="px-6 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                      Update Password
+                    </button>
+                  </form>
+                </div>
+
+                <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                  <h4 className="font-semibold mb-4">Cache Management</h4>
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => {
+                        localStorage.clear();
+                        showToastMessage('Cache cleared successfully!', 'success');
+                      }}
+                      className="px-6 py-2 bg-red-500/20 text-red-400 rounded-lg font-medium hover:bg-red-500/30"
+                    >
+                      <i className="fas fa-trash mr-2"></i>Clear All Cache
+                    </button>
+                    <p className="text-sm text-slate-400">This will clear all cached data including celebrities, page content, and blog posts.</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                  <h4 className="font-semibold mb-4">Booking Email Settings</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-slate-400 mb-1 block">Admin Email (receives booking requests)</label>
+                      <input
+                        type="email"
+                        defaultValue="elitefacesbooking@gmail.com"
+                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                      />
+                    </div>
+                    <button type="button" className="px-6 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                      Save Email Settings
+                    </button>
                   </div>
                 </div>
               </div>

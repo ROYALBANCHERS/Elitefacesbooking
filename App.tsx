@@ -26,8 +26,12 @@ const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+
+  // Initialize welcome modal state from localStorage
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    return !localStorage.getItem('elitefaces_welcome_dismissed');
+  });
 
   // Load celebrities from localStorage if available, otherwise use CELEBRITIES constant
   const [celebrities, setCelebrities] = useState<Celebrity[]>(() => {
@@ -54,7 +58,7 @@ const HomePage: React.FC = () => {
 
   const handleCloseWelcome = useCallback(() => {
     setShowWelcomeModal(false);
-    sessionStorage.setItem('elitefaces_visited', 'true');
+    localStorage.setItem('elitefaces_welcome_dismissed', 'true');
   }, []);
 
   const handleCategoryChange = useCallback((cat: Category | 'All') => {
@@ -74,13 +78,10 @@ const HomePage: React.FC = () => {
     }
   }, []);
 
-  // Show welcome modal only once on first visit
-  useEffect(() => {
-    const hasVisited = sessionStorage.getItem('elitefaces_visited');
-    if (hasVisited) {
-      setShowWelcomeModal(false);
-    }
-  }, []);
+  // Initialize welcome modal state from localStorage
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    return !localStorage.getItem('elitefaces_welcome_dismissed');
+  });
 
   const filteredCelebrities = useMemo(() => {
     return celebrities.filter(c => {
