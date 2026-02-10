@@ -1,13 +1,14 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
-import { Celebrity, Category } from './types';
+import { Celebrity, Category, BlogPost, CustomPageData } from './types';
 import CelebrityCard from './components/CelebrityCard';
 import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
 import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
+import SharedFooter from './components/SharedFooter';
 import { RouterProvider, useRouter, Page } from './components/Router';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
@@ -21,6 +22,9 @@ import FAQsPage from './components/pages/FAQsPage';
 import ContactUs from './components/pages/ContactUs';
 import Portfolio from './components/pages/Portfolio';
 import ArticleDetail from './components/ArticleDetail';
+import CustomPage from './components/CustomPage';
+import BlogListingPage from './components/BlogListingPage';
+import BlogDetailPage from './components/BlogDetailPage';
 
 const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
@@ -39,6 +43,17 @@ const HomePage: React.FC = () => {
   const [celebrities, setCelebrities] = useState<Celebrity[]>(() => {
     const saved = localStorage.getItem('elitefaces_celebrities');
     return saved ? JSON.parse(saved) : CELEBRITIES;
+  });
+
+  // Load custom sections for navigation
+  const [customSections, setCustomSections] = useState<string[]>(() => {
+    const savedBlogs = localStorage.getItem('elitefaces_blogs');
+    if (savedBlogs) {
+      const blogs: BlogPost[] = JSON.parse(savedBlogs);
+      const sections = Array.from(new Set(blogs.filter(b => b.published !== false).map(b => b.section)));
+      return sections;
+    }
+    return [];
   });
 
   const { navigateTo } = useRouter();
@@ -127,12 +142,22 @@ const HomePage: React.FC = () => {
           </button>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
+          <div className="hidden md:flex items-center space-x-6 text-sm font-medium tracking-widest text-slate-300">
             <button onClick={() => handleNavigateAndScroll('home', 'roster')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
-            <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">OUR SERVICES</button>
+            <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">SERVICES</button>
             <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors" title="Learn about us">ABOUT</button>
             <BlogMenu />
-            <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors" title="View success stories">PORTFOLIO</button>
+            {/* Custom Sections from Admin */}
+            {customSections.map(section => (
+              <button
+                key={section}
+                onClick={() => navigateTo('blog-listing', section)}
+                className="hover:text-yellow-500 transition-colors"
+                title={`View ${section}`}
+              >
+                {section.toUpperCase()}
+              </button>
+            ))}
             <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold" title="Contact us for booking">CONTACT</button>
           </div>
 
@@ -169,7 +194,7 @@ const HomePage: React.FC = () => {
                 }}
                 className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
               >
-                OUR SERVICES
+                SERVICES
               </button>
               <button
                 onClick={() => {
@@ -181,15 +206,18 @@ const HomePage: React.FC = () => {
                 ABOUT
               </button>
               <BlogMenu />
-              <button
-                onClick={() => {
-                  navigateTo('portfolio');
-                  setShowMobileMenu(false);
-                }}
-                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
-              >
-                PORTFOLIO
-              </button>
+              {customSections.map(section => (
+                <button
+                  key={section}
+                  onClick={() => {
+                    navigateTo('blog-listing', section);
+                    setShowMobileMenu(false);
+                  }}
+                  className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+                >
+                  {section.toUpperCase()}
+                </button>
+              ))}
               <button
                 onClick={() => {
                   navigateTo('contact');
@@ -343,109 +371,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 bg-gradient-to-b from-slate-900 to-slate-950 border-t border-white/10 mt-20" role="contentinfo">
-        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
-          <div className="md:col-span-2">
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-16 w-16 rounded-full border-2 border-yellow-500/30" />
-                <span className="text-3xl font-black gold-gradient serif italic">EliteFacesBooking</span>
-            </div>
-            <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
-              Delhi's leading talent management agency. Book top Indian celebrities, actors, influencers, anchors, magicians, and entertainment talent for events, endorsements, and brand collaborations.
-            </p>
-            <div className="flex justify-center md:justify-start space-x-3 sm:space-x-4">
-              <a href="https://www.instagram.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="Instagram">
-                <i className="fab fa-instagram"></i>
-              </a>
-              <a href="https://www.linkedin.com/company/elitefaces" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="LinkedIn">
-                <i className="fab fa-linkedin-in"></i>
-              </a>
-              <a href="https://twitter.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="Twitter/X">
-                <i className="fab fa-x-twitter"></i>
-              </a>
-              <a
-                href="https://wa.me/919990996091"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-green-500 hover:border-green-500/50 transition-all"
-                aria-label="WhatsApp 1"
-              >
-                <i className="fab fa-whatsapp text-lg"></i>
-              </a>
-              <a
-                href="https://wa.me/917678683436"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-green-500 hover:border-green-500/50 transition-all"
-                aria-label="WhatsApp 2"
-              >
-                <i className="fab fa-whatsapp text-lg"></i>
-              </a>
-            </div>
-          </div>
-          <nav>
-            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Get in Touch</h4>
-            <ul className="space-y-4 text-slate-400">
-              <li>
-                <a href="mailto:elitefacesbooking@gmail.com" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
-                  <i className="fas fa-envelope text-sm"></i>
-                  <span>elitefacesbooking@gmail.com</span>
-                </a>
-              </li>
-              <li>
-                <a href="tel:+919990996091" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
-                  <i className="fas fa-phone text-sm"></i>
-                  <span>+91 9990996091</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://wa.me/919990996091" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
-                  <i className="fab fa-whatsapp text-sm"></i>
-                  <span>WhatsApp Chat 1</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://wa.me/917678683436" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start space-x-2 hover:text-green-500 transition-colors">
-                  <i className="fab fa-whatsapp text-sm"></i>
-                  <span>WhatsApp Chat 2</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <nav>
-            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Services</h4>
-            <ul className="space-y-4 text-slate-400">
-              <li><button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors">Our Services</button></li>
-              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors">Success Stories</button></li>
-              <li><button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors">About Us</button></li>
-              <li><button onClick={() => navigateTo('contact')} className="hover:text-yellow-500 transition-colors">Book Talent</button></li>
-            </ul>
-          </nav>
-          <nav>
-            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Resources</h4>
-            <ul className="space-y-4 text-slate-400">
-              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-yellow-500 transition-colors">Blog</button></li>
-              <li><button onClick={() => navigateTo('faqs')} className="hover:text-yellow-500 transition-colors">FAQs</button></li>
-              <li><button onClick={() => navigateTo('why-us')} className="hover:text-yellow-500 transition-colors">Why Choose Us</button></li>
-              <li><button onClick={() => navigateTo('privacy')} className="hover:text-yellow-500 transition-colors">Privacy Policy</button></li>
-            </ul>
-          </nav>
-        </div>
-        <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/10">
-          <div className="text-center text-slate-400 text-xs tracking-widest uppercase mb-4">
-            © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
-          </div>
-          <div className="text-center">
-            <button
-              onClick={() => setShowAdminPanel(true)}
-              className="text-slate-500 hover:text-yellow-500 text-xs transition-colors"
-              aria-label="Admin Login"
-            >
-              <i className="fas fa-lock mr-1"></i>Admin
-            </button>
-          </div>
-        </div>
-      </footer>
+      <SharedFooter />
 
       {/* Welcome Modal */}
       {showWelcomeModal && (
@@ -474,26 +400,37 @@ const HomePage: React.FC = () => {
   );
 };
 
+const PageWrapper: React.FC<{ children: React.ReactNode; showFooter?: boolean }> = ({ children, showFooter = true }) => {
+  return (
+    <>
+      {children}
+      {showFooter && <SharedFooter />}
+    </>
+  );
+};
+
 interface AppContainerProps {}
 
 const AppContainer: React.FC<AppContainerProps> = () => {
-  const { currentPage, selectedArticle } = useRouter();
+  const { currentPage, pageParams } = useRouter();
 
   return (
     <>
       {currentPage === 'home' && <HomePage />}
-      {currentPage === 'privacy' && <PrivacyPolicy />}
-      {currentPage === 'services' && <OurServices />}
-      {currentPage === 'blog-industry' && <BlogIndustryTrends />}
-      {currentPage === 'blog-faq' && <BlogFAQ />}
-      {currentPage === 'blog-success' && <BlogSuccessStories />}
-      {currentPage === 'blog-event' && <BlogEventPlanning />}
-      {currentPage === 'about' && <AboutUs />}
-      {currentPage === 'why-us' && <WhyChooseUs />}
-      {currentPage === 'faqs' && <FAQsPage />}
-      {currentPage === 'contact' && <ContactUs />}
-      {currentPage === 'portfolio' && <Portfolio />}
-      {currentPage === 'article-detail' && <ArticleDetail article={selectedArticle} />}
+      {currentPage === 'privacy' && <PageWrapper><PrivacyPolicy /></PageWrapper>}
+      {currentPage === 'services' && <PageWrapper><OurServices /></PageWrapper>}
+      {currentPage === 'blog-industry' && <PageWrapper><BlogIndustryTrends /></PageWrapper>}
+      {currentPage === 'blog-faq' && <PageWrapper><BlogFAQ /></PageWrapper>}
+      {currentPage === 'blog-success' && <PageWrapper><BlogSuccessStories /></PageWrapper>}
+      {currentPage === 'blog-event' && <PageWrapper><BlogEventPlanning /></PageWrapper>}
+      {currentPage === 'about' && <PageWrapper><AboutUs /></PageWrapper>}
+      {currentPage === 'why-us' && <PageWrapper><WhyChooseUs /></PageWrapper>}
+      {currentPage === 'faqs' && <PageWrapper><FAQsPage /></PageWrapper>}
+      {currentPage === 'contact' && <PageWrapper><ContactUs /></PageWrapper>}
+      {currentPage === 'portfolio' && <PageWrapper><Portfolio /></PageWrapper>}
+      {currentPage === 'blog-listing' && <PageWrapper><BlogListingPage section={pageParams || undefined} /></PageWrapper>}
+      {currentPage === 'blog-detail' && <PageWrapper><BlogDetailPage blogId={pageParams || undefined} /></PageWrapper>}
+      {currentPage === 'custom-page' && <PageWrapper><CustomPage pageId={pageParams || undefined} /></PageWrapper>}
     </>
   );
 };

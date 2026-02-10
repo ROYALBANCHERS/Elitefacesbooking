@@ -1,6 +1,22 @@
 import React, { useState, useCallback, useMemo } from 'react';
 
-export type Page = 'home' | 'privacy' | 'services' | 'blog-industry' | 'blog-faq' | 'blog-success' | 'blog-event' | 'about' | 'why-us' | 'faqs' | 'contact' | 'portfolio' | 'article-detail';
+export type Page =
+  | 'home'
+  | 'privacy'
+  | 'services'
+  | 'blog-industry'
+  | 'blog-faq'
+  | 'blog-success'
+  | 'blog-event'
+  | 'about'
+  | 'why-us'
+  | 'faqs'
+  | 'contact'
+  | 'portfolio'
+  | 'article-detail'
+  | 'blog-listing'
+  | 'blog-detail'
+  | 'custom-page';
 
 interface Article {
   id?: string;
@@ -11,9 +27,10 @@ interface Article {
 
 interface RouterContextType {
   currentPage: Page;
-  navigateTo: (page: Page) => void;
+  navigateTo: (page: Page, params?: string) => void;
   selectedArticle: Article | null;
   setSelectedArticle: (article: Article | null) => void;
+  pageParams: string | null;
 }
 
 export const RouterContext = React.createContext<RouterContextType | undefined>(undefined);
@@ -33,10 +50,19 @@ interface RouterProviderProps {
 export const RouterProvider: React.FC<RouterProviderProps> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedArticle, setSelectedArticleState] = useState<Article | null>(null);
+  const [pageParams, setPageParams] = useState<string | null>(null);
 
-  const navigateTo = useCallback((page: Page) => {
+  const navigateTo = useCallback((page: Page, params?: string) => {
     setCurrentPage(page);
+    if (params) {
+      setPageParams(params);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Track page view for Google Analytics
+    if (typeof window !== 'undefined' && (window as any).trackPageView) {
+      (window as any).trackPageView(`/${page}${params ? `/${params}` : ''}`);
+    }
   }, []);
 
   const setSelectedArticle = useCallback((article: Article | null) => {
@@ -47,8 +73,9 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ children }) => {
     currentPage,
     navigateTo,
     selectedArticle,
-    setSelectedArticle
-  }), [currentPage, navigateTo, selectedArticle, setSelectedArticle]);
+    setSelectedArticle,
+    pageParams
+  }), [currentPage, navigateTo, selectedArticle, setSelectedArticle, pageParams]);
 
   return (
     <RouterContext.Provider value={contextValue}>

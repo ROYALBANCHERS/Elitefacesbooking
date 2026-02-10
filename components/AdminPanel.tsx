@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Celebrity } from '../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Celebrity, BlogPost, CustomPageData } from '../types';
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
@@ -17,42 +17,44 @@ interface PageContent {
   imageUrl?: string;
 }
 
-// Blog content interface
-interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  imageUrl: string;
-  date: string;
-}
-
 interface AdminPanelProps {
   onClose: () => void;
   onUpdateCelebrities: (celebrities: Celebrity[]) => void;
   celebrities: Celebrity[];
-  onUpdateBlogs?: (blogs: BlogPost[]) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images' | 'pages' | 'settings'>('celebrities');
+  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'pages' | 'settings'>('celebrities');
   const [editingCelebrity, setEditingCelebrity] = useState<Celebrity | null>(null);
   const [celebrityList, setCelebrityList] = useState<Celebrity[]>(celebrities);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [customPages, setCustomPages] = useState<CustomPageData[]>([]);
+  const [editingCustomPage, setEditingCustomPage] = useState<CustomPageData | null>(null);
   const [pageContents, setPageContents] = useState<PageContent[]>([]);
   const [editingPageContent, setEditingPageContent] = useState<PageContent | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [selectedPageSection, setSelectedPageSection] = useState('all');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Load page contents from localStorage on mount
+  // Load data from localStorage on mount
   useEffect(() => {
+    const savedBlogs = localStorage.getItem('elitefaces_blogs');
+    if (savedBlogs) {
+      setBlogPosts(JSON.parse(savedBlogs));
+    }
+
+    const savedCustomPages = localStorage.getItem('elitefaces_custom_pages');
+    if (savedCustomPages) {
+      setCustomPages(JSON.parse(savedCustomPages));
+    }
+
     const savedContents = localStorage.getItem('elitefaces_page_contents');
     if (savedContents) {
       setPageContents(JSON.parse(savedContents));
@@ -61,16 +63,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       const defaultContents: PageContent[] = [
         { id: 'hero-title', title: 'Hero Title', content: 'Elevate Your Brand with Iconic Faces', section: 'home' },
         { id: 'hero-subtitle', title: 'Hero Subtitle', content: "India's Leading Talent Agency", section: 'home' },
-        { id: 'about-story', title: 'About Story', content: 'EliteFacesBooking was founded with a simple vision: to revolutionize the way brands connect with celebrity talent.', section: 'about' },
-        { id: 'services-intro', title: 'Services Introduction', content: 'Comprehensive talent management and celebrity booking services tailored to your brand\'s unique needs', section: 'services' },
       ];
       setPageContents(defaultContents);
       localStorage.setItem('elitefaces_page_contents', JSON.stringify(defaultContents));
-    }
-
-    const savedBlogs = localStorage.getItem('elitefaces_blogs');
-    if (savedBlogs) {
-      setBlogPosts(JSON.parse(savedBlogs));
     }
   }, []);
 
@@ -106,6 +101,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEmail('');
     setPassword('');
   };
+
+  // Image upload handler (converts to Base64 for localStorage)
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, onImageLoaded: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 2MB for localStorage)
+    if (file.size > 2 * 1024 * 1024) {
+      showToastMessage('Image too large! Maximum 2MB allowed.', 'error');
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      onImageLoaded(base64String);
+      setUploadingImage(false);
+    };
+    reader.onerror = () => {
+      showToastMessage('Failed to upload image', 'error');
+      setUploadingImage(false);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   // Celebrity management
   const handleEditCelebrity = (celebrity: Celebrity) => {
@@ -159,15 +179,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     }
   };
 
-  // Blog management
+  // Blog management with section
   const handleAddBlog = () => {
     const newBlog: BlogPost = {
       id: Date.now().toString(),
       title: 'New Blog Post',
-      content: 'Add your blog content here...',
+      content: '<p>Add your blog content here...</p>',
+      excerpt: 'Add a brief excerpt...',
       category: 'Industry Trends',
+      section: 'Blog',
       imageUrl: 'LOGO.PNG',
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      author: 'Admin',
+      published: true,
+      slug: `blog-${Date.now()}`
     };
     setBlogPosts([...blogPosts, newBlog]);
     setEditingBlog(newBlog);
@@ -182,7 +207,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
       localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
-      if (onUpdateBlogs) onUpdateBlogs(updated);
       showToastMessage('Blog deleted successfully', 'success');
     }
   };
@@ -196,9 +220,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setBlogPosts(updated);
     localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
-    if (onUpdateBlogs) onUpdateBlogs(updated);
     setEditingBlog(null);
-    showToastMessage('Blog updated successfully!', 'success');
+    showToastMessage('Blog saved successfully! It will appear on the website.', 'success');
   };
 
   const updateBlogField = (field: keyof BlogPost, value: any) => {
@@ -210,7 +233,60 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     }
   };
 
-  // Page content management
+  // Custom Page management
+  const handleAddCustomPage = () => {
+    const newPage: CustomPageData = {
+      id: Date.now().toString(),
+      title: 'New Page',
+      slug: `page-${Date.now()}`,
+      content: '<p>Add your page content here...</p>',
+      section: 'Custom',
+      imageUrl: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      published: true,
+      metaDescription: ''
+    };
+    setCustomPages([...customPages, newPage]);
+    setEditingCustomPage(newPage);
+  };
+
+  const handleEditCustomPage = (page: CustomPageData) => {
+    setEditingCustomPage(page);
+  };
+
+  const handleDeleteCustomPage = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this page?')) {
+      const updated = customPages.filter(p => p.id !== id);
+      setCustomPages(updated);
+      localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
+      showToastMessage('Page deleted successfully', 'success');
+    }
+  };
+
+  const handleSaveCustomPage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomPage) return;
+
+    const updated = customPages.map(p =>
+      p.id === editingCustomPage.id ? editingCustomPage : p
+    );
+    setCustomPages(updated);
+    localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
+    setEditingCustomPage(null);
+    showToastMessage('Custom page saved successfully!', 'success');
+  };
+
+  const updateCustomPageField = (field: keyof CustomPageData, value: any) => {
+    if (editingCustomPage) {
+      setEditingCustomPage({
+        ...editingCustomPage,
+        [field]: value
+      });
+    }
+  };
+
+  // Page Content management
   const handleAddPageContent = () => {
     const newContent: PageContent = {
       id: Date.now().toString(),
@@ -368,22 +444,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               <i className="fas fa-users mr-2"></i>Celebrities
             </button>
             <button
-              onClick={() => setActiveTab('pages')}
-              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'pages' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
-            >
-              <i className="fas fa-file-alt mr-2"></i>Page Content
-            </button>
-            <button
               onClick={() => setActiveTab('blogs')}
               className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-blog mr-2"></i>Blog Posts
             </button>
             <button
-              onClick={() => setActiveTab('images')}
-              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              onClick={() => setActiveTab('pages')}
+              className={`flex-1 py-4 px-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'pages' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
-              <i className="fas fa-images mr-2"></i>Images
+              <i className="fas fa-file-alt mr-2"></i>Custom Pages
             </button>
             <button
               onClick={() => setActiveTab('settings')}
@@ -410,7 +480,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                       {celebrityList.map((celeb) => (
                         <div key={celeb.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
                           <div className="flex items-start justify-between mb-3">
-                            <img src={celeb.imageUrl} alt={celeb.name} className="w-16 h-16 rounded-lg object-cover" />
+                            <img src={celeb.imageUrl} alt={celeb.name} className="w-16 h-16 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'LOGO.PNG'; }} />
                             <div className="flex space-x-2">
                               <button onClick={() => handleEditCelebrity(celeb)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
                                 <i className="fas fa-edit"></i>
@@ -473,16 +543,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
 
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
-                          <input
-                            type="text"
-                            value={editingCelebrity.imageUrl}
-                            onChange={(e) => updateCelebrityField('imageUrl', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
                           <label className="text-sm text-slate-400 mb-1 block">Followers</label>
                           <input
                             type="text"
@@ -501,6 +561,44 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                             className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
                             required
                           />
+                        </div>
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Rating</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={editingCelebrity.rating}
+                            onChange={(e) => updateCelebrityField('rating', parseFloat(e.target.value))}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Image URL or Upload</label>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editingCelebrity.imageUrl}
+                            onChange={(e) => updateCelebrityField('imageUrl', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            placeholder="Enter image URL..."
+                          />
+                          <div className="flex items-center space-x-2">
+                            <span className="text-slate-400 text-sm">Or upload:</span>
+                            <label className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer text-sm">
+                              <i className="fas fa-upload mr-2"></i>Choose File
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(e, (url) => updateCelebrityField('imageUrl', url))}
+                              />
+                            </label>
+                            {uploadingImage && <span className="text-yellow-500 text-sm">Uploading...</span>}
+                          </div>
+                          <img src={editingCelebrity.imageUrl} alt="Preview" className="w-20 h-20 rounded-lg object-cover mt-2" onError={(e) => { (e.target as HTMLImageElement).src = 'LOGO.PNG'; }} />
                         </div>
                       </div>
 
@@ -529,135 +627,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
             )}
 
-            {activeTab === 'pages' && (
-              <div className="space-y-6">
-                {!editingPageContent ? (
-                  <>
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                      <h3 className="text-lg font-semibold">Manage Page Content</h3>
-                      <div className="flex gap-3">
-                        <select
-                          value={selectedPageSection}
-                          onChange={(e) => setSelectedPageSection(e.target.value)}
-                          className="bg-slate-800 border border-white/10 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500"
-                        >
-                          <option value="all">All Sections</option>
-                          <option value="home">Home</option>
-                          <option value="about">About</option>
-                          <option value="services">Services</option>
-                          <option value="contact">Contact</option>
-                          <option value="portfolio">Portfolio</option>
-                          <option value="hero">Hero Section</option>
-                        </select>
-                        <button onClick={handleAddPageContent} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
-                          <i className="fas fa-plus mr-2"></i>Add Content
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {filteredPageContents.map((content) => (
-                        <div key={content.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <span className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">{content.section}</span>
-                              <h4 className="font-semibold mt-2">{content.title}</h4>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button onClick={() => handleEditPageContent(content)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
-                                <i className="fas fa-edit"></i>
-                              </button>
-                              <button onClick={() => handleDeletePageContent(content.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-slate-400 text-sm line-clamp-3">{content.content}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="max-w-2xl mx-auto">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold">Edit Page Content</h3>
-                      <button onClick={() => setEditingPageContent(null)} className="text-slate-400 hover:text-white">
-                        <i className="fas fa-times mr-2"></i>Cancel
-                      </button>
-                    </div>
-
-                    <form onSubmit={handleSavePageContent} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Title</label>
-                          <input
-                            type="text"
-                            value={editingPageContent.title}
-                            onChange={(e) => updatePageContentField('title', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Section</label>
-                          <select
-                            value={editingPageContent.section}
-                            onChange={(e) => updatePageContentField('section', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                          >
-                            <option value="home">Home</option>
-                            <option value="about">About</option>
-                            <option value="services">Services</option>
-                            <option value="contact">Contact</option>
-                            <option value="portfolio">Portfolio</option>
-                            <option value="hero">Hero Section</option>
-                            <option value="footer">Footer</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-sm text-slate-400 mb-1 block">Content (HTML supported)</label>
-                        <textarea
-                          value={editingPageContent.content}
-                          onChange={(e) => updatePageContentField('content', e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
-                          rows={8}
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-sm text-slate-400 mb-1 block">Image URL (Optional)</label>
-                        <input
-                          type="text"
-                          value={editingPageContent.imageUrl || ''}
-                          onChange={(e) => updatePageContentField('imageUrl', e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                          placeholder="https://example.com/image.jpg"
-                        />
-                      </div>
-
-                      <div className="flex space-x-3 pt-4">
-                        <button type="submit" className="flex-1 py-3 btn-gold text-slate-950 font-bold rounded-lg">
-                          <i className="fas fa-save mr-2"></i>Save Content
-                        </button>
-                        <button type="button" onClick={() => setEditingPageContent(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-              </div>
-            )}
-
             {activeTab === 'blogs' && (
               <div className="space-y-6">
                 {!editingBlog ? (
                   <>
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">Manage Blog Posts</h3>
+                      <div>
+                        <h3 className="text-lg font-semibold">Manage Blog Posts</h3>
+                        <p className="text-slate-400 text-sm">These posts appear on the website under their sections</p>
+                      </div>
                       <button onClick={handleAddBlog} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
                         <i className="fas fa-plus mr-2"></i>Add Blog Post
                       </button>
@@ -670,11 +648,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         <p className="text-slate-400">Click "Add Blog Post" to create your first blog post.</p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {blogPosts.map((blog) => (
-                          <div key={blog.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
+                          <div key={blog.id} className={`bg-slate-900/50 border rounded-xl p-4 ${blog.published === false ? 'border-red-500/30' : 'border-white/10'}`}>
                             <div className="flex items-start justify-between mb-3">
-                              <img src={blog.imageUrl} alt={blog.title} className="w-20 h-20 rounded-lg object-cover" />
+                              <img src={blog.imageUrl} alt={blog.title} className="w-20 h-20 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'LOGO.PNG'; }} />
                               <div className="flex space-x-2">
                                 <button onClick={() => handleEditBlog(blog)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
                                   <i className="fas fa-edit"></i>
@@ -685,12 +663,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                               </div>
                             </div>
                             <h4 className="font-semibold mb-1">{blog.title}</h4>
-                            <p className="text-slate-400 text-sm mb-2">{blog.category}</p>
+                            <div className="flex gap-2 mb-2">
+                              <span className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">{blog.category}</span>
+                              <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">{blog.section}</span>
+                              {!blog.published && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full">Draft</span>}
+                            </div>
                             <p className="text-slate-500 text-xs">
                               {new Date(blog.date).toLocaleDateString()}
                             </p>
                             <p className="text-slate-400 text-sm mt-2 line-clamp-2">
-                              {blog.content.substring(0, 100)}...
+                              {blog.excerpt || blog.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
                             </p>
                           </div>
                         ))}
@@ -721,28 +703,75 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="text-sm text-slate-400 mb-1 block">Category</label>
-                          <select
+                          <input
+                            type="text"
                             value={editingBlog.category}
                             onChange={(e) => updateBlogField('category', e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                          >
-                            <option>Industry Trends</option>
-                            <option>Event Planning</option>
-                            <option>Success Stories</option>
-                            <option>FAQ</option>
-                          </select>
+                            placeholder="e.g., Industry Trends"
+                            required
+                          />
                         </div>
                         <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
+                          <label className="text-sm text-slate-400 mb-1 block">Section (Navigation Name)</label>
+                          <input
+                            type="text"
+                            value={editingBlog.section}
+                            onChange={(e) => updateBlogField('section', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            placeholder="e.g., News, Updates"
+                            required
+                          />
+                          <p className="text-xs text-slate-500 mt-1">This creates a navigation link to this section</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Excerpt (Short description)</label>
+                        <input
+                          type="text"
+                          value={editingBlog.excerpt || ''}
+                          onChange={(e) => updateBlogField('excerpt', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="Brief description for listing page"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Image URL or Upload</label>
+                        <div className="space-y-2">
                           <input
                             type="text"
                             value={editingBlog.imageUrl}
                             onChange={(e) => updateBlogField('imageUrl', e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
                             placeholder="https://example.com/image.jpg"
-                            required
                           />
+                          <div className="flex items-center space-x-2">
+                            <label className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer text-sm">
+                              <i className="fas fa-upload mr-2"></i>Upload Image
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(e, (url) => updateBlogField('imageUrl', url))}
+                              />
+                            </label>
+                            {uploadingImage && <span className="text-yellow-500 text-sm">Uploading...</span>}
+                          </div>
+                          <img src={editingBlog.imageUrl} alt="Preview" className="w-full h-40 object-cover rounded-lg mt-2" onError={(e) => { (e.target as HTMLImageElement).src = 'LOGO.PNG'; }} />
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Author</label>
+                        <input
+                          type="text"
+                          value={editingBlog.author || ''}
+                          onChange={(e) => updateBlogField('author', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="Author name"
+                        />
                       </div>
 
                       <div>
@@ -752,17 +781,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                           onChange={(e) => updateBlogField('content', e.target.value)}
                           className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
                           rows={12}
-                          placeholder="Enter your blog content here... You can use HTML tags like <p>, <h1>, <strong>, <em>, <ul>, <li>, etc."
+                          placeholder="Enter your blog content here... You can use HTML tags like &lt;p&gt;, &lt;h1&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, etc."
                           required
                         />
                         <p className="text-xs text-slate-500 mt-1">
                           <i className="fas fa-info-circle mr-1"></i>
-                          Tip: You can use HTML for formatting. Example: &lt;p&gt;Your text&lt;/p&gt;, &lt;strong&gt;Bold&lt;/strong&gt;, &lt;em&gt;Italic&lt;/em&gt;
+                          Tip: You can use HTML for formatting. Example: &lt;p&gt;Your text&lt;/p&gt;, &lt;strong&gt;Bold&lt;/strong&gt;
                         </p>
                       </div>
 
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="published"
+                          checked={editingBlog.published !== false}
+                          onChange={(e) => updateBlogField('published', e.target.checked)}
+                          className="w-4 h-4 rounded"
+                        />
+                        <label htmlFor="published" className="text-slate-300">Published (visible on website)</label>
+                      </div>
+
                       <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
-                        <p className="text-sm text-slate-400 mb-2">Preview:</p>
+                        <p className="text-sm text-slate-400 mb-2">Content Preview:</p>
                         <div className="bg-white rounded-lg p-4 text-slate-900 max-h-40 overflow-y-auto">
                           <div dangerouslySetInnerHTML={{ __html: editingBlog.content }} />
                         </div>
@@ -782,90 +822,180 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
             )}
 
-            {activeTab === 'images' && (
+            {activeTab === 'pages' && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Image Management</h3>
-                  <p className="text-slate-400 text-sm mb-6">Upload and manage images for celebrities, blogs, and modals. Images are stored as URLs.</p>
+                {!editingCustomPage ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg font-semibold">Custom Pages</h3>
+                        <p className="text-slate-400 text-sm">Create custom pages that appear on your website</p>
+                      </div>
+                      <button onClick={handleAddCustomPage} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                        <i className="fas fa-plus mr-2"></i>Add Custom Page
+                      </button>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
-                      <h4 className="font-semibold mb-4 flex items-center">
-                        <i className="fas fa-link text-yellow-500 mr-2"></i>Add Image URL
-                      </h4>
-                      <p className="text-sm text-slate-400 mb-4">Enter a URL to add an image to your media library.</p>
-                      <div className="space-y-3">
+                    {customPages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <i className="fas fa-file-alt text-6xl text-slate-700 mb-4"></i>
+                        <h3 className="text-xl font-semibold mb-2">No Custom Pages Yet</h3>
+                        <p className="text-slate-400">Click "Add Custom Page" to create your first page.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {customPages.map((page) => (
+                          <div key={page.id} className={`bg-slate-900/50 border rounded-xl p-4 ${page.published === false ? 'border-red-500/30' : 'border-white/10'}`}>
+                            <div className="flex items-start justify-between mb-3">
+                              {page.imageUrl && <img src={page.imageUrl} alt={page.title} className="w-20 h-20 rounded-lg object-cover" />}
+                              <div className="flex space-x-2">
+                                <button onClick={() => handleEditCustomPage(page)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
+                                  <i className="fas fa-edit"></i>
+                                </button>
+                                <button onClick={() => handleDeleteCustomPage(page.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
+                                  <i className="fas fa-trash"></i>
+                                </button>
+                              </div>
+                            </div>
+                            <h4 className="font-semibold mb-1">{page.title}</h4>
+                            <p className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full inline-block mb-2">/{page.slug}</p>
+                            {!page.published && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full ml-2">Draft</span>}
+                            <p className="text-slate-500 text-xs">{new Date(page.updatedAt).toLocaleDateString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-semibold">Edit Custom Page</h3>
+                      <button onClick={() => setEditingCustomPage(null)} className="text-slate-400 hover:text-white">
+                        <i className="fas fa-times mr-2"></i>Cancel
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveCustomPage} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Page Title</label>
+                          <input
+                            type="text"
+                            value={editingCustomPage.title}
+                            onChange={(e) => updateCustomPageField('title', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">URL Slug</label>
+                          <input
+                            type="text"
+                            value={editingCustomPage.slug}
+                            onChange={(e) => updateCustomPageField('slug', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            placeholder="page-url-slug"
+                            required
+                          />
+                          <p className="text-xs text-slate-500 mt-1">This will be the page URL: /{editingCustomPage.slug}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Meta Description (SEO)</label>
                         <input
                           type="text"
-                          placeholder="https://example.com/image.jpg"
-                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                          value={editingCustomPage.metaDescription || ''}
+                          onChange={(e) => updateCustomPageField('metaDescription', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="Brief description for search engines"
                         />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Section</label>
+                        <select
+                          value={editingCustomPage.section}
+                          onChange={(e) => updateCustomPageField('section', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                        >
+                          <option value="Custom">Custom</option>
+                          <option value="Blog">Blog</option>
+                          <option value="News">News</option>
+                          <option value="Updates">Updates</option>
+                          <option value="Resources">Resources</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Cover Image URL or Upload</label>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editingCustomPage.imageUrl || ''}
+                            onChange={(e) => updateCustomPageField('imageUrl', e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <label className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer text-sm">
+                              <i className="fas fa-upload mr-2"></i>Upload Image
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(e, (url) => updateCustomPageField('imageUrl', url))}
+                              />
+                            </label>
+                            {uploadingImage && <span className="text-yellow-500 text-sm">Uploading...</span>}
+                          </div>
+                          {editingCustomPage.imageUrl && (
+                            <img src={editingCustomPage.imageUrl} alt="Preview" className="w-full h-40 object-cover rounded-lg mt-2" />
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Page Content (HTML supported)</label>
+                        <textarea
+                          value={editingCustomPage.content}
+                          onChange={(e) => updateCustomPageField('content', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          rows={12}
+                          placeholder="Enter your page content... You can use HTML tags"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
                         <input
-                          type="text"
-                          placeholder="Image name/description"
-                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                          type="checkbox"
+                          id="pagePublished"
+                          checked={editingCustomPage.published !== false}
+                          onChange={(e) => updateCustomPageField('published', e.target.checked)}
+                          className="w-4 h-4 rounded"
                         />
-                        <button className="w-full py-2 btn-gold text-slate-950 rounded-lg font-medium">
-                          <i className="fas fa-plus mr-2"></i>Add to Library
+                        <label htmlFor="pagePublished" className="text-slate-300">Published (visible on website)</label>
+                      </div>
+
+                      <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                        <p className="text-sm text-slate-400 mb-2">Content Preview:</p>
+                        <div className="bg-white rounded-lg p-4 text-slate-900 max-h-40 overflow-y-auto">
+                          <div dangerouslySetInnerHTML={{ __html: editingCustomPage.content }} />
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button type="submit" className="flex-1 py-3 btn-gold text-slate-950 font-bold rounded-lg">
+                          <i className="fas fa-save mr-2"></i>Save Page
+                        </button>
+                        <button type="button" onClick={() => setEditingCustomPage(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
+                          Cancel
                         </button>
                       </div>
-                    </div>
-
-                    <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
-                      <h4 className="font-semibold mb-4 flex items-center">
-                        <i className="fas fa-cloud text-blue-500 mr-2"></i>Image Hosting
-                      </h4>
-                      <p className="text-sm text-slate-400 mb-4">Recommended free image hosting services:</p>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-center text-slate-300">
-                          <i className="fas fa-check text-green-500 mr-2"></i>
-                          <a href="https://imgbb.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500">ImgBB</a>
-                        </li>
-                        <li className="flex items-center text-slate-300">
-                          <i className="fas fa-check text-green-500 mr-2"></i>
-                          <a href="https://postimages.org" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500">PostImages</a>
-                        </li>
-                        <li className="flex items-center text-slate-300">
-                          <i className="fas fa-check text-green-500 mr-2"></i>
-                          <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500">Cloudinary</a>
-                        </li>
-                      </ul>
-                    </div>
+                    </form>
                   </div>
-
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-4 flex items-center">
-                      <i className="fas fa-photo-video text-purple-500 mr-2"></i>Current Images in Use
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {celebrities.map((celeb) => (
-                        <div key={celeb.id} className="relative group">
-                          <img
-                            src={celeb.imageUrl}
-                            alt={celeb.name}
-                            className="w-full aspect-square object-cover rounded-lg border border-white/10"
-                          />
-                          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                            <span className="text-xs text-white text-center px-2">{celeb.name}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-4 flex items-center">
-                      <i className="fas fa-crown text-yellow-500 mr-2"></i>Brand Images
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="bg-slate-900/50 border border-white/10 rounded-xl p-4 text-center">
-                        <img src="LOGO.PNG" alt="Main Logo" className="w-20 h-20 mx-auto rounded-lg object-cover mb-2" />
-                        <p className="text-sm font-medium">Main Logo</p>
-                        <p className="text-xs text-slate-500">LOGO.PNG</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -874,58 +1004,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                 <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
 
                 <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
-                  <h4 className="font-semibold mb-4">Change Password</h4>
-                  <form className="space-y-4">
-                    <div>
-                      <label className="text-sm text-slate-400 mb-1 block">Current Password</label>
-                      <input
-                        type="password"
-                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-400 mb-1 block">New Password</label>
-                      <input
-                        type="password"
-                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                      />
-                    </div>
-                    <button type="button" className="px-6 py-2 btn-gold text-slate-950 rounded-lg font-medium">
-                      Update Password
-                    </button>
-                  </form>
-                </div>
-
-                <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
                   <h4 className="font-semibold mb-4">Cache Management</h4>
                   <div className="space-y-4">
                     <button
                       onClick={() => {
                         localStorage.clear();
-                        showToastMessage('Cache cleared successfully!', 'success');
+                        showToastMessage('Cache cleared! Page will reload...', 'success');
+                        setTimeout(() => window.location.reload(), 1000);
                       }}
                       className="px-6 py-2 bg-red-500/20 text-red-400 rounded-lg font-medium hover:bg-red-500/30"
                     >
                       <i className="fas fa-trash mr-2"></i>Clear All Cache
                     </button>
-                    <p className="text-sm text-slate-400">This will clear all cached data including celebrities, page content, and blog posts.</p>
+                    <p className="text-sm text-slate-400">This will clear all cached data including celebrities, blogs, and custom pages.</p>
                   </div>
                 </div>
 
                 <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
-                  <h4 className="font-semibold mb-4">Booking Email Settings</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-slate-400 mb-1 block">Admin Email (receives booking requests)</label>
-                      <input
-                        type="email"
-                        defaultValue="elitefacesbooking@gmail.com"
-                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                      />
+                  <h4 className="font-semibold mb-4">Statistics</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-slate-800 rounded-lg">
+                      <p className="text-3xl font-bold text-yellow-500">{celebrityList.length}</p>
+                      <p className="text-slate-400 text-sm">Celebrities</p>
                     </div>
-                    <button type="button" className="px-6 py-2 btn-gold text-slate-950 rounded-lg font-medium">
-                      Save Email Settings
-                    </button>
+                    <div className="text-center p-4 bg-slate-800 rounded-lg">
+                      <p className="text-3xl font-bold text-blue-500">{blogPosts.length}</p>
+                      <p className="text-slate-400 text-sm">Blog Posts</p>
+                    </div>
+                    <div className="text-center p-4 bg-slate-800 rounded-lg">
+                      <p className="text-3xl font-bold text-green-500">{customPages.length}</p>
+                      <p className="text-slate-400 text-sm">Custom Pages</p>
+                    </div>
+                    <div className="text-center p-4 bg-slate-800 rounded-lg">
+                      <p className="text-3xl font-bold text-purple-500">{blogPosts.filter(b => b.published !== false).length}</p>
+                      <p className="text-slate-400 text-sm">Published</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                  <h4 className="font-semibold mb-4">How to Use</h4>
+                  <div className="space-y-3 text-sm text-slate-400">
+                    <p><strong className="text-white">Celebrities:</strong> Add/Edit celebrity profiles. Upload photos directly from your device.</p>
+                    <p><strong className="text-white">Blog Posts:</strong> Create blog articles. The "Section" field creates a navigation link that users can click to view all posts in that section.</p>
+                    <p><strong className="text-white">Custom Pages:</strong> Create standalone pages with custom URLs. Perfect for About, Services, or any custom content.</p>
                   </div>
                 </div>
               </div>
