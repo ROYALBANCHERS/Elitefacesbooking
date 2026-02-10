@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Celebrity } from '../types';
+import { useAdmin } from './AdminContext';
 
 // Admin credentials - stored in localStorage for persistence
 const DEFAULT_ADMIN_CREDENTIALS = {
@@ -33,7 +34,7 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs, onUpdatePages }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAdmin, setAdminAuth, logoutAdmin } = useAdmin();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -51,12 +52,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
-    // Check if already authenticated in session
-    const auth = sessionStorage.getItem('admin_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-    }
-
     // Load admin credentials from localStorage or use defaults
     const storedCreds = localStorage.getItem('admin_credentials');
     if (!storedCreds) {
@@ -67,6 +62,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     const storedPages = localStorage.getItem('page_contents');
     if (storedPages) {
       setPageContents(JSON.parse(storedPages));
+    } else {
+      // Initialize with default pages
+      const defaultPages = [
+        { id: 'services', title: 'Our Services', content: 'Default services content...', slug: 'services' },
+        { id: 'about', title: 'About Us', content: 'Default about content...', slug: 'about' },
+        { id: 'portfolio', title: 'Portfolio', content: 'Default portfolio content...', slug: 'portfolio' },
+        { id: 'contact', title: 'Contact Us', content: 'Default contact content...', slug: 'contact' }
+      ];
+      setPageContents(defaultPages);
+      localStorage.setItem('page_contents', JSON.stringify(defaultPages));
     }
 
     // Load blog posts from localStorage
@@ -92,8 +97,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     e.preventDefault();
     const creds = getAdminCredentials();
     if (username === creds.username && password === creds.password) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin_auth', 'true');
+      setAdminAuth(true);
       showToastMessage('Welcome back, Admin!', 'success');
       setPassword('');
     } else {
@@ -102,10 +106,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('admin_auth');
+    logoutAdmin();
     setUsername('');
     setPassword('');
+    onClose();
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -231,7 +235,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAdmin) {
     return (
       <>
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
