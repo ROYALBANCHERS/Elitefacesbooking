@@ -79,11 +79,6 @@ const HomePage: React.FC = () => {
     }
   }, []);
 
-  // Initialize welcome modal state from localStorage
-  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
-    return !localStorage.getItem('elitefaces_welcome_dismissed');
-  });
-
   const filteredCelebrities = useMemo(() => {
     return celebrities.filter(c => {
       const matchesCategory = selectedCategory === 'All' || c.category === selectedCategory;
