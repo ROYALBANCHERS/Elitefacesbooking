@@ -30,6 +30,11 @@ export interface RecommendationRequest {
   budget: string;
 }
 
+// Blog placement options
+export type BlogPlacement = 'homepage' | 'separate-page' | 'both';
+
+export type HomepagePosition = 'hero' | 'after-roster' | 'after-services' | 'before-footer';
+
 // Blog Types
 export interface BlogPost {
   id: string;
@@ -43,6 +48,10 @@ export interface BlogPost {
   author?: string;
   published: boolean;
   slug?: string;
+  // New fields for placement
+  placement?: BlogPlacement;
+  homepagePosition?: HomepagePosition;
+  customPageSlug?: string; // If placed on custom page
 }
 
 // Custom Page Types

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Celebrity, BlogPost, CustomPageData } from '../types';
+import { Celebrity, BlogPost, CustomPageData, BlogPlacement, HomepagePosition } from '../types';
 import { useTheme } from '../ThemeContext';
 
 // Admin credentials
@@ -212,7 +212,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       date: new Date().toISOString(),
       author: 'Admin',
       published: true,
-      slug: `blog-${Date.now()}`
+      slug: `blog-${Date.now()}`,
+      placement: 'separate-page',
+      homepagePosition: 'after-roster',
+      customPageSlug: ''
     };
     setBlogPosts([...blogPosts, newBlog]);
     setEditingBlog(newBlog);
@@ -752,6 +755,63 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                             required
                           />
                           <p className="text-xs text-slate-500 mt-1">This creates a navigation link to this section</p>
+                        </div>
+                      </div>
+
+                      {/* Placement Settings */}
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                        <h4 className="text-yellow-500 font-semibold mb-3 flex items-center">
+                          <i className="fas fa-map-marker-alt mr-2"></i>Where should this blog post appear?
+                        </h4>
+
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm text-slate-400 mb-2 block">Display Location</label>
+                            <select
+                              value={editingBlog.placement || 'separate-page'}
+                              onChange={(e) => updateBlogField('placement', e.target.value as any)}
+                              className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                            >
+                              <option value="separate-page">Separate Blog Page Only</option>
+                              <option value="homepage">Homepage Only</option>
+                              <option value="both">Both Homepage & Separate Page</option>
+                            </select>
+                          </div>
+
+                          {editingBlog.placement === 'homepage' || editingBlog.placement === 'both' ? (
+                            <div>
+                              <label className="text-sm text-slate-400 mb-2 block">Position on Homepage</label>
+                              <select
+                                value={editingBlog.homepagePosition || 'after-roster'}
+                                onChange={(e) => updateBlogField('homepagePosition', e.target.value as any)}
+                                className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              >
+                                <option value="hero">Hero Section (Top of page)</option>
+                                <option value="after-roster">After Talent Roster</option>
+                                <option value="after-services">After Services Section</option>
+                                <option value="before-footer">Before Footer</option>
+                              </select>
+                              <p className="text-xs text-slate-500 mt-1">Choose where this blog appears on the homepage</p>
+                            </div>
+                          ) : null}
+
+                          {editingBlog.placement === 'separate-page' && (
+                            <div>
+                              <label className="text-sm text-slate-400 mb-2 block">Or Add to Custom Page (Optional)</label>
+                              <select
+                                value={editingBlog.customPageSlug || ''}
+                                onChange={(e) => updateBlogField('customPageSlug', e.target.value)}
+                                className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              >
+                                <option value="">-- Select Custom Page --</option>
+                                {/* This will be populated dynamically with custom pages */}
+                                <option value="about">About Page</option>
+                                <option value="services">Services Page</option>
+                                <option value="contact">Contact Page</option>
+                              </select>
+                              <p className="text-xs text-slate-500 mt-1">Blog will appear on this custom page</p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
