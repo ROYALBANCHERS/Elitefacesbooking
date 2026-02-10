@@ -1,7 +1,11 @@
 import React from 'react';
 import { useRouter } from './Router';
 
-const SharedFooter: React.FC = () => {
+interface SharedFooterProps {
+  onAdminClick?: () => void;
+}
+
+const SharedFooter: React.FC<SharedFooterProps> = ({ onAdminClick }) => {
   const { navigateTo } = useRouter();
 
   return (
@@ -92,6 +96,11 @@ const SharedFooter: React.FC = () => {
         <div className="text-center space-x-4">
           <button onClick={() => navigateTo('privacy')} className="text-slate-500 hover:text-yellow-500 text-xs transition-colors">Privacy Policy</button>
           <button onClick={() => navigateTo('faqs')} className="text-slate-500 hover:text-yellow-500 text-xs transition-colors">FAQs</button>
+          {onAdminClick && (
+            <button onClick={onAdminClick} className="text-slate-600 hover:text-yellow-500 text-xs transition-colors ml-4">
+              <i className="fas fa-lock mr-1"></i>Admin
+            </button>
+          )}
         </div>
       </div>
     </footer>

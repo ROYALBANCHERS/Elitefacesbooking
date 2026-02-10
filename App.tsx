@@ -385,7 +385,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <SharedFooter />
+      <SharedFooter onAdminClick={() => setShowAdminPanel(true)} />
 
       {/* Welcome Modal */}
       {showWelcomeModal && (
@@ -414,11 +414,11 @@ const HomePage: React.FC = () => {
   );
 };
 
-const PageWrapper: React.FC<{ children: React.ReactNode; showFooter?: boolean }> = ({ children, showFooter = true }) => {
+const PageWrapper: React.FC<{ children: React.ReactNode; showFooter?: boolean; onAdminClick?: () => void }> = ({ children, showFooter = true, onAdminClick }) => {
   return (
     <>
       {children}
-      {showFooter && <SharedFooter />}
+      {showFooter && <SharedFooter onAdminClick={onAdminClick} />}
     </>
   );
 };
@@ -427,24 +427,34 @@ interface AppContainerProps {}
 
 const AppContainer: React.FC<AppContainerProps> = () => {
   const { currentPage, pageParams } = useRouter();
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   return (
     <>
       {currentPage === 'home' && <HomePage />}
-      {currentPage === 'privacy' && <PageWrapper><PrivacyPolicy /></PageWrapper>}
-      {currentPage === 'services' && <PageWrapper><OurServices /></PageWrapper>}
-      {currentPage === 'blog-industry' && <PageWrapper><BlogIndustryTrends /></PageWrapper>}
-      {currentPage === 'blog-faq' && <PageWrapper><BlogFAQ /></PageWrapper>}
-      {currentPage === 'blog-success' && <PageWrapper><BlogSuccessStories /></PageWrapper>}
-      {currentPage === 'blog-event' && <PageWrapper><BlogEventPlanning /></PageWrapper>}
-      {currentPage === 'about' && <PageWrapper><AboutUs /></PageWrapper>}
-      {currentPage === 'why-us' && <PageWrapper><WhyChooseUs /></PageWrapper>}
-      {currentPage === 'faqs' && <PageWrapper><FAQsPage /></PageWrapper>}
-      {currentPage === 'contact' && <PageWrapper><ContactUs /></PageWrapper>}
-      {currentPage === 'portfolio' && <PageWrapper><Portfolio /></PageWrapper>}
-      {currentPage === 'blog-listing' && <PageWrapper><BlogListingPage section={pageParams || undefined} /></PageWrapper>}
-      {currentPage === 'blog-detail' && <PageWrapper><BlogDetailPage blogId={pageParams || undefined} /></PageWrapper>}
-      {currentPage === 'custom-page' && <PageWrapper><CustomPage pageId={pageParams || undefined} /></PageWrapper>}
+      {currentPage === 'privacy' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><PrivacyPolicy /></PageWrapper>}
+      {currentPage === 'services' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><OurServices /></PageWrapper>}
+      {currentPage === 'blog-industry' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogIndustryTrends /></PageWrapper>}
+      {currentPage === 'blog-faq' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogFAQ /></PageWrapper>}
+      {currentPage === 'blog-success' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogSuccessStories /></PageWrapper>}
+      {currentPage === 'blog-event' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogEventPlanning /></PageWrapper>}
+      {currentPage === 'about' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><AboutUs /></PageWrapper>}
+      {currentPage === 'why-us' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><WhyChooseUs /></PageWrapper>}
+      {currentPage === 'faqs' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><FAQsPage /></PageWrapper>}
+      {currentPage === 'contact' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><ContactUs /></PageWrapper>}
+      {currentPage === 'portfolio' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><Portfolio /></PageWrapper>}
+      {currentPage === 'blog-listing' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogListingPage section={pageParams || undefined} /></PageWrapper>}
+      {currentPage === 'blog-detail' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogDetailPage blogId={pageParams || undefined} /></PageWrapper>}
+      {currentPage === 'custom-page' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><CustomPage pageId={pageParams || undefined} /></PageWrapper>}
+
+      {/* Global Admin Panel */}
+      {showAdminPanel && (
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          onUpdateCelebrities={() => {}}
+          celebrities={[]}
+        />
+      )}
     </>
   );
 };
