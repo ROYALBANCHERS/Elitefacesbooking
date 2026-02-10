@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useCallback, memo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
 import { Celebrity, Category } from './types';
 import CelebrityCard from './components/CelebrityCard';
@@ -28,6 +28,7 @@ const HomePage: React.FC = () => {
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showAllCelebrities, setShowAllCelebrities] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Initialize welcome modal state from localStorage
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
@@ -70,6 +71,20 @@ const HomePage: React.FC = () => {
     setSearchQuery(e.target.value);
   }, []);
 
+  // Handle navigation and scroll to section
+  const handleNavigateAndScroll = useCallback((page: Page, sectionId?: string) => {
+    navigateTo(page);
+    setShowMobileMenu(false);
+    if (sectionId) {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [navigateTo]);
+
   // Update page title and meta tags for SEO
   React.useEffect(() => {
     document.title = 'Elite Faces Booking - Book Top Celebrities & Influencers in India';
@@ -92,14 +107,17 @@ const HomePage: React.FC = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 px-6 py-3" role="navigation" aria-label="Main Navigation">
         <div className="container mx-auto flex justify-between items-center">
-          <button 
-            onClick={() => navigateTo('home')}
+          <button
+            onClick={() => {
+              navigateTo('home');
+              setShowMobileMenu(false);
+            }}
             className="flex items-center space-x-3 group logo-glow transition-all hover:opacity-80"
             aria-label="Elite Faces Booking - Home"
           >
-            <img 
-              src="LOGO.PNG" 
-              alt="Elite Faces Booking Logo" 
+            <img
+              src="LOGO.PNG"
+              alt="Elite Faces Booking Logo"
               className="h-12 w-12 rounded-full object-cover border border-white/10"
             />
             <div className="flex flex-col -space-y-1">
@@ -107,15 +125,83 @@ const HomePage: React.FC = () => {
               <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 hidden sm:block">Celebrity Booking</span>
             </div>
           </button>
+
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-widest text-slate-300">
-            <button onClick={() => navigateTo('home')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
+            <button onClick={() => handleNavigateAndScroll('home', 'roster')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
             <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">OUR SERVICES</button>
             <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors" title="Learn about us">ABOUT</button>
             <BlogMenu />
             <button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors" title="View success stories">PORTFOLIO</button>
             <button onClick={() => navigateTo('contact')} className="btn-gold text-slate-950 px-6 py-2 rounded-full font-bold" title="Contact us for booking">CONTACT</button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="md:hidden text-white p-2"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {showMobileMenu ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden glass border-t border-white/10 mt-3 py-4 px-6">
+            <div className="flex flex-col space-y-4">
+              <button
+                onClick={() => handleNavigateAndScroll('home', 'roster')}
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+              >
+                TALENT ROSTER
+              </button>
+              <button
+                onClick={() => {
+                  navigateTo('services');
+                  setShowMobileMenu(false);
+                }}
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+              >
+                OUR SERVICES
+              </button>
+              <button
+                onClick={() => {
+                  navigateTo('about');
+                  setShowMobileMenu(false);
+                }}
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+              >
+                ABOUT
+              </button>
+              <BlogMenu />
+              <button
+                onClick={() => {
+                  navigateTo('portfolio');
+                  setShowMobileMenu(false);
+                }}
+                className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2"
+              >
+                PORTFOLIO
+              </button>
+              <button
+                onClick={() => {
+                  navigateTo('contact');
+                  setShowMobileMenu(false);
+                }}
+                className="btn-gold text-slate-950 px-6 py-2 rounded-lg font-bold text-center"
+              >
+                CONTACT
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -127,7 +213,7 @@ const HomePage: React.FC = () => {
             <img src="LOGO.png" alt="" className="w-[800px] grayscale brightness-200" />
           </div>
         </div>
-        
+
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="flex justify-center mb-8 animate-in fade-in zoom-in duration-1000">
              <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-24 w-24 rounded-full border-2 border-yellow-500/30 shadow-2xl shadow-yellow-500/10" />
@@ -141,8 +227,8 @@ const HomePage: React.FC = () => {
             Book India's top celebrities, actors, influencers, and entertainment talent. Professional talent management and celebrity booking services for events, endorsements, and brand collaborations.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <a href="#roster" className="btn-gold text-slate-950 px-10 py-5 rounded-xl font-bold text-lg w-full sm:w-auto">BROWSE TALENT</a>
-            <a href="#ai-consultant" className="glass px-10 py-5 rounded-xl font-bold text-lg hover:bg-white/5 transition-all w-full sm:w-auto">TALK TO AI ADVISOR</a>
+            <button onClick={() => handleNavigateAndScroll('home', 'roster')} className="btn-gold text-slate-950 px-10 py-5 rounded-xl font-bold text-lg w-full sm:w-auto">BROWSE TALENT</button>
+            <button onClick={() => handleNavigateAndScroll('home', 'ai-consultant')} className="glass px-10 py-5 rounded-xl font-bold text-lg hover:bg-white/5 transition-all w-full sm:w-auto">TALK TO AI ADVISOR</button>
           </div>
         </div>
       </header>
@@ -244,44 +330,44 @@ const HomePage: React.FC = () => {
       <AIAssistant />
 
       {/* Trust Markers */}
-      <section className="py-20 border-y border-white/5">
+      <section className="py-20 border-y border-white/5 bg-slate-950/30">
         <div className="container mx-auto px-6">
           <div className="flex flex-wrap justify-center items-center gap-12 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-            <div className="text-2xl font-bold tracking-tighter">PEPSICO</div>
-            <div className="text-2xl font-bold tracking-tighter">NIKE INDIA</div>
-            <div className="text-2xl font-bold tracking-tighter">Null</div>
-            <div className="text-2xl font-bold tracking-tighter">NULL</div>
-            <div className="text-2xl font-bold tracking-tighter">EIA</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">PEPSICO</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">NIKE INDIA</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">TATA</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">RELIANCE</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">EIA</div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-20 glass mt-20" role="contentinfo">
+      <footer className="py-20 bg-gradient-to-b from-slate-900 to-slate-950 border-t border-white/10 mt-20" role="contentinfo">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
           <div className="md:col-span-2">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-16 w-16 rounded-full border border-white/10" />
-                <span className="text-3xl font-black gold-gradient serif italic block">EliteFacesBooking</span>
+                <img src="LOGO.PNG" alt="Elite Faces Booking Logo" className="h-16 w-16 rounded-full border-2 border-yellow-500/30" />
+                <span className="text-3xl font-black gold-gradient serif italic">EliteFacesBooking</span>
             </div>
             <p className="text-slate-400 max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed">
               Delhi's leading talent management agency. Book top Indian celebrities, actors, influencers, anchors, magicians, and entertainment talent for events, endorsements, and brand collaborations.
             </p>
             <div className="flex justify-center md:justify-start space-x-3 sm:space-x-4">
-              <a href="https://www.instagram.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="Instagram">
                 <i className="fab fa-instagram"></i>
               </a>
-              <a href="https://www.linkedin.com/company/elitefaces" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/elitefaces" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="LinkedIn">
                 <i className="fab fa-linkedin-in"></i>
               </a>
-              <a href="https://twitter.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-yellow-500 transition-colors" aria-label="Twitter/X">
+              <a href="https://twitter.com/elitefacesbooking" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-yellow-500 hover:border-yellow-500/50 transition-all" aria-label="Twitter/X">
                 <i className="fab fa-x-twitter"></i>
               </a>
               <a
                 href="https://wa.me/919990996091"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
+                className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-green-500 hover:border-green-500/50 transition-all"
                 aria-label="WhatsApp 1"
               >
                 <i className="fab fa-whatsapp text-lg"></i>
@@ -290,7 +376,7 @@ const HomePage: React.FC = () => {
                 href="https://wa.me/917678683436"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-green-500 transition-colors"
+                className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:text-green-500 hover:border-green-500/50 transition-all"
                 aria-label="WhatsApp 2"
               >
                 <i className="fab fa-whatsapp text-lg"></i>
@@ -298,7 +384,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           <nav>
-            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Get in Touch</h4>
+            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Get in Touch</h4>
             <ul className="space-y-4 text-slate-400">
               <li>
                 <a href="mailto:elitefacesbooking@gmail.com" className="flex items-center justify-center md:justify-start space-x-2 hover:text-yellow-500 transition-colors">
@@ -327,32 +413,32 @@ const HomePage: React.FC = () => {
             </ul>
           </nav>
           <nav>
-            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Services</h4>
+            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Services</h4>
             <ul className="space-y-4 text-slate-400">
-              <li><button onClick={() => navigateTo('services')} className="hover:text-white transition-colors">Our Services</button></li>
-              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-white transition-colors">Success Stories</button></li>
-              <li><button onClick={() => navigateTo('about')} className="hover:text-white transition-colors">About Us</button></li>
-              <li><button onClick={() => navigateTo('contact')} className="hover:text-white transition-colors">Book Talent</button></li>
+              <li><button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors">Our Services</button></li>
+              <li><button onClick={() => navigateTo('portfolio')} className="hover:text-yellow-500 transition-colors">Success Stories</button></li>
+              <li><button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors">About Us</button></li>
+              <li><button onClick={() => navigateTo('contact')} className="hover:text-yellow-500 transition-colors">Book Talent</button></li>
             </ul>
           </nav>
           <nav>
-            <h4 className="text-lg font-bold mb-6 text-white uppercase tracking-widest">Resources</h4>
+            <h4 className="text-lg font-bold mb-6 text-yellow-500 uppercase tracking-widest">Resources</h4>
             <ul className="space-y-4 text-slate-400">
-              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-white transition-colors">Blog</button></li>
-              <li><button onClick={() => navigateTo('faqs')} className="hover:text-white transition-colors">FAQs</button></li>
-              <li><button onClick={() => navigateTo('why-us')} className="hover:text-white transition-colors">Why Choose Us</button></li>
-              <li><button onClick={() => navigateTo('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
+              <li><button onClick={() => navigateTo('blog-industry')} className="hover:text-yellow-500 transition-colors">Blog</button></li>
+              <li><button onClick={() => navigateTo('faqs')} className="hover:text-yellow-500 transition-colors">FAQs</button></li>
+              <li><button onClick={() => navigateTo('why-us')} className="hover:text-yellow-500 transition-colors">Why Choose Us</button></li>
+              <li><button onClick={() => navigateTo('privacy')} className="hover:text-yellow-500 transition-colors">Privacy Policy</button></li>
             </ul>
           </nav>
         </div>
-        <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/5">
-          <div className="text-center text-slate-500 text-xs tracking-widest uppercase mb-4">
+        <div className="container mx-auto px-6 pt-12 mt-12 border-t border-white/10">
+          <div className="text-center text-slate-400 text-xs tracking-widest uppercase mb-4">
             © {new Date().getFullYear()} EliteFacesBooking Pvt. Ltd. All rights reserved.
           </div>
           <div className="text-center">
             <button
               onClick={() => setShowAdminPanel(true)}
-              className="text-slate-600 hover:text-slate-500 text-xs transition-colors"
+              className="text-slate-500 hover:text-yellow-500 text-xs transition-colors"
               aria-label="Admin Login"
             >
               <i className="fas fa-lock mr-1"></i>Admin

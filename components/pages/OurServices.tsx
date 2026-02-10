@@ -60,6 +60,14 @@ const OurServices: React.FC = () => {
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigateTo('home')}
+          className="text-yellow-500 hover:text-yellow-400 mb-8 flex items-center space-x-2"
+        >
+          <span>←</span> <span>Back to Home</span>
+        </button>
+
         {/* Header */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 gold-gradient">Our Services</h1>
@@ -75,7 +83,7 @@ const OurServices: React.FC = () => {
               <div className="text-5xl mb-4">{service.icon}</div>
               <h3 className="text-2xl font-bold mb-3 text-white">{service.title}</h3>
               <p className="text-slate-400 mb-6">{service.description}</p>
-              
+
               <div className="space-y-2 mb-6">
                 {service.features.map((feature, idx) => (
                   <div key={idx} className="flex items-center space-x-2">
@@ -85,7 +93,7 @@ const OurServices: React.FC = () => {
                 ))}
               </div>
 
-              <button 
+              <button
                 onClick={() => navigateTo('contact')}
                 className="text-yellow-500 font-semibold hover:text-yellow-400 transition-colors text-sm uppercase tracking-widest"
               >
@@ -101,7 +109,7 @@ const OurServices: React.FC = () => {
           <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
             Our expert team is ready to help you find the perfect talent match for your campaign or event.
           </p>
-          <button 
+          <button
             onClick={() => navigateTo('contact')}
             className="btn-gold text-slate-950 px-10 py-4 rounded-xl font-bold text-lg inline-block hover:shadow-lg transition-all"
           >
