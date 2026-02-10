@@ -17,6 +17,8 @@ jobs:
       - uses: actions/configure-pages@v4
       - name: Install dependencies
         run: npm install
+      - name: Verify vite installation
+        run: npx vite --version
       - name: Build
         run: npx vite build
         env:
