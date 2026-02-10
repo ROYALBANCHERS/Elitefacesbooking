@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 20
       - uses: actions/configure-pages@v4
-      - run: npm install
+      - run: npm ci --include=dev
       - name: Fix node_modules permissions
         run: chmod -R +x node_modules/.bin/
       - run: npm run build
