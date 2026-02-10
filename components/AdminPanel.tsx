@@ -4,7 +4,8 @@ import { Celebrity } from '../types';
 // Admin credentials
 const ADMIN_CREDENTIALS = {
   username: 'Rishabhkumar023',
-  email: 'growthing868@gmail.com'
+  email: 'growthing868@gmail.com',
+  password: 'admin123' // Default password, should be changed in production
 };
 
 // Blog content interface
@@ -28,6 +29,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images'>('celebrities');
   const [editingCelebrity, setEditingCelebrity] = useState<Celebrity | null>(null);
   const [celebrityList, setCelebrityList] = useState<Celebrity[]>(celebrities);
@@ -54,7 +56,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_CREDENTIALS.username && email === ADMIN_CREDENTIALS.email) {
+    if (username === ADMIN_CREDENTIALS.username && email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_auth', 'true');
       showToastMessage('Welcome back, Admin!', 'success');
@@ -68,6 +70,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     sessionStorage.removeItem('admin_auth');
     setUsername('');
     setEmail('');
+    setPassword('');
   };
 
   const handleEditCelebrity = (celebrity: Celebrity) => {
@@ -204,6 +207,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
                   placeholder="Enter email"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm text-slate-400 mb-1 block">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                  placeholder="Enter password"
                   required
                 />
               </div>

@@ -28,12 +28,24 @@ const HomePage: React.FC = () => {
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [celebrities, setCelebrities] = useState(CELEBRITIES);
+
+  // Load celebrities from localStorage if available, otherwise use CELEBRITIES constant
+  const [celebrities, setCelebrities] = useState<Celebrity[]>(() => {
+    const saved = localStorage.getItem('elitefaces_celebrities');
+    return saved ? JSON.parse(saved) : CELEBRITIES;
+  });
+
   const { navigateTo } = useRouter();
 
   // Memoized callbacks to prevent unnecessary re-renders
   const handleBookCelebrity = useCallback((celeb: Celebrity) => {
     setBookingCelebrity(celeb);
+  }, []);
+
+  // Wrapper function to update celebrities and persist to localStorage
+  const handleUpdateCelebrities = useCallback((updatedCelebrities: Celebrity[]) => {
+    setCelebrities(updatedCelebrities);
+    localStorage.setItem('elitefaces_celebrities', JSON.stringify(updatedCelebrities));
   }, []);
 
   const handleCloseBooking = useCallback(() => {
@@ -345,7 +357,7 @@ const HomePage: React.FC = () => {
       {showAdminPanel && (
         <AdminPanel
           onClose={() => setShowAdminPanel(false)}
-          onUpdateCelebrities={setCelebrities}
+          onUpdateCelebrities={handleUpdateCelebrities}
           celebrities={celebrities}
         />
       )}
