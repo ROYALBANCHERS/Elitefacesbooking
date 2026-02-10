@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Celebrity } from '../types';
 import { useAdmin } from './AdminContext';
+import ImageUpload from './ImageUpload';
 
 // Admin credentials - stored in localStorage for persistence
 const DEFAULT_ADMIN_CREDENTIALS = {
@@ -427,35 +428,44 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <ImageUpload
+                          label="Celebrity Image"
+                          currentImage={editingCelebrity.imageUrl}
+                          onImageSelect={(name, base64) => updateCelebrityField('imageUrl', base64)}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-slate-400 mb-1 block">Followers</label>
+                            <input
+                              type="text"
+                              value={editingCelebrity.followers}
+                              onChange={(e) => updateCelebrityField('followers', e.target.value)}
+                              className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-slate-400 mb-1 block">Price Range</label>
+                            <input
+                              type="text"
+                              value={editingCelebrity.priceRange}
+                              onChange={(e) => updateCelebrityField('priceRange', e.target.value)}
+                              className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
+                          <label className="text-sm text-slate-400 mb-1 block">Or paste Image URL</label>
                           <input
                             type="text"
                             value={editingCelebrity.imageUrl}
                             onChange={(e) => updateCelebrityField('imageUrl', e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Followers</label>
-                          <input
-                            type="text"
-                            value={editingCelebrity.followers}
-                            onChange={(e) => updateCelebrityField('followers', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Price Range</label>
-                          <input
-                            type="text"
-                            value={editingCelebrity.priceRange}
-                            onChange={(e) => updateCelebrityField('priceRange', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
+                            placeholder="https://example.com/image.jpg"
                           />
                         </div>
                       </div>
@@ -565,17 +575,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                             <option>FAQ</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
-                          <input
-                            type="text"
-                            value={editingBlog.imageUrl}
-                            onChange={(e) => updateBlogField('imageUrl', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            placeholder="https://example.com/image.jpg"
-                            required
-                          />
-                        </div>
+                      </div>
+
+                      <ImageUpload
+                        label="Blog Cover Image"
+                        currentImage={editingBlog.imageUrl}
+                        onImageSelect={(name, base64) => updateBlogField('imageUrl', base64)}
+                      />
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Or paste Image URL</label>
+                        <input
+                          type="text"
+                          value={editingBlog.imageUrl}
+                          onChange={(e) => updateBlogField('imageUrl', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="https://example.com/image.jpg"
+                        />
                       </div>
 
                       <div>

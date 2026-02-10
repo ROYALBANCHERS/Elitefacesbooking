@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from '../Router';
+import PageEditor from '../PageEditor';
 
 interface FAQ {
   id: string;
@@ -10,6 +11,44 @@ interface FAQ {
 const BlogFAQ: React.FC = () => {
   const { navigateTo } = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+  useEffect(() => {
+    // Load FAQs from localStorage
+    const storedBlogs = localStorage.getItem('blog_posts');
+    if (storedBlogs) {
+      const allBlogs = JSON.parse(storedBlogs);
+      const faqBlogs = allBlogs.filter((b: any) => b.category === 'FAQ');
+      if (faqBlogs.length > 0) {
+        setFaqs(faqBlogs.map((b: any) => ({
+          id: b.id,
+          question: b.title,
+          answer: b.content
+        })));
+      }
+    }
+
+    // Default FAQs if none exist
+    if (faqs.length === 0) {
+      setFaqs([
+        {
+          id: '1',
+          question: 'How do I book a celebrity through EliteFacesBooking?',
+          answer: 'Simply browse our talent roster, click on your preferred celebrity, and fill out the booking form with event details. Our team will review your request and contact you within 24 hours with pricing and availability.'
+        },
+        {
+          id: '2',
+          question: 'What is the typical turnaround time for booking confirmation?',
+          answer: 'We typically provide confirmation within 24-48 hours. For urgent requests, contact us via WhatsApp at +91 9990996091 or +91 7678683436 for priority handling.'
+        },
+        {
+          id: '3',
+          question: 'Do you offer package deals for multiple celebrities?',
+          answer: 'Yes! We offer customized packages for corporate events, product launches, and multi-day campaigns. Contact our team to discuss your specific requirements and budget.'
+        }
+      ]);
+    }
+  }, []);
 
   const faqs: FAQ[] = [
     {

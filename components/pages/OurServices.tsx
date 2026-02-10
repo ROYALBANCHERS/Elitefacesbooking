@@ -60,6 +60,14 @@ const OurServices: React.FC = () => {
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigateTo('home')}
+          className="text-yellow-500 hover:text-yellow-400 mb-6 flex items-center space-x-2"
+        >
+          <span>←</span> <span>Back to Home</span>
+        </button>
+
         {/* Header */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 gold-gradient">Our Services</h1>
