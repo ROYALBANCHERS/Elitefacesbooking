@@ -17,7 +17,7 @@ export const CELEBRITIES: Celebrity[] = [
     id: '2',
     name: 'MANNARA CHOPRA',
     category: 'Bollywood',
-    bio: '.',
+    bio: 'Talented actress known for her impactful performances in South Indian and Hindi films.',
     rating: 5.0,
     imageUrl: 'MANNARA CHOPRA.jpeg',
     priceRange: 'Contact us',
@@ -44,13 +44,13 @@ export const CELEBRITIES: Celebrity[] = [
     imageUrl: 'ESHA DEOL.jpeg',
     priceRange: 'Selective',
     followers: '2.5 Million +',
-    expertise: ['Philanthropy', 'Corporate Leadership', 'Ethical Business', 'Actor' ]
+    expertise: ['Philanthropy', 'Corporate Leadership', 'Ethical Business', 'Acting']
   },
   {
     id: '5',
     name: 'ANCHOR MAYURI',
     category: 'Anchor',
-    bio: 'null',
+    bio: 'Professional anchor and event host with expertise in managing corporate events and global concerts.',
     rating: 4.9,
     imageUrl: 'ANCHOR MAYURI.jpeg',
     priceRange: 'Contact us',
@@ -61,7 +61,7 @@ export const CELEBRITIES: Celebrity[] = [
     id: '6',
     name: 'Soniya Sharma',
     category: 'Digital Influencers',
-    bio: 'Soniya sharma, Iindividual instagram Fashion creator, known for his Instagram content.',
+    bio: 'Soniya Sharma, individual Instagram Fashion creator known for her engaging content.',
     rating: 4.7,
     imageUrl: 'SONIYA SHARMA.jpeg',
     priceRange: 'Contact us',
@@ -72,12 +72,12 @@ export const CELEBRITIES: Celebrity[] = [
     id: '7',
     name: 'Anchor Naaz',
     category: 'Anchor',
-    bio: 'null.',
+    bio: 'Experienced anchor specializing in corporate events and concerts.',
     rating: 4.8,
     imageUrl: 'ANCHOR NAAZ.jpeg',
     priceRange: 'Contact us',
-    followers: 'null',
-    expertise: ['concert', 'Corporate event']
+    followers: '100k+',
+    expertise: ['Concerts', 'Corporate Events']
   },
   {
     id: '8',
