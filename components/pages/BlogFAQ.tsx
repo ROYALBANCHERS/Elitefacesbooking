@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from '../Router';
+import PageEditor from '../PageEditor';
 
 interface FAQ {
   id: string;
@@ -10,59 +11,44 @@ interface FAQ {
 const BlogFAQ: React.FC = () => {
   const { navigateTo } = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
 
-  const faqs: FAQ[] = [
-    {
-      id: '1',
-      question: 'How do I book a celebrity through EliteFacesBooking?',
-      answer: 'Simply browse our talent roster, click on your preferred celebrity, and fill out the booking form with event details. Our team will review your request and contact you within 24 hours with pricing and availability.'
-    },
-    {
-      id: '2',
-      question: 'What is the typical turnaround time for booking confirmation?',
-      answer: 'We typically provide confirmation within 24-48 hours. For urgent requests, contact us via WhatsApp at +91 9990996091 or +91 7678683436 for priority handling.'
-    },
-    {
-      id: '3',
-      question: 'Do you offer package deals for multiple celebrities?',
-      answer: 'Yes! We offer customized packages for corporate events, product launches, and multi-day campaigns. Contact our team to discuss your specific requirements and budget.'
-    },
-    {
-      id: '4',
-      question: 'What payment methods do you accept?',
-      answer: 'We accept bank transfers, digital wallets, and corporate checks. A 50% advance is required to confirm the booking, with the remainder due 7 days before the event.'
-    },
-    {
-      id: '5',
-      question: 'Can we negotiate on celebrity fees?',
-      answer: 'Fees vary based on event type, duration, and celebrity availability. We always work with clients to find solutions within their budget. Contact us to discuss flexible pricing options.'
-    },
-    {
-      id: '6',
-      question: 'What happens if the event is postponed or cancelled?',
-      answer: 'Cancellations within 30 days of the event incur 50% cancellation fee. Postponements are subject to celebrity availability. See our full terms and conditions for details.'
-    },
-    {
-      id: '7',
-      question: 'Do you provide makeup, styling, and wardrobe services?',
-      answer: 'These services are not included in standard bookings but can be arranged for an additional fee. Our team can coordinate with professional makeup and styling teams.'
-    },
-    {
-      id: '8',
-      question: 'Can celebrities participate in virtual events?',
-      answer: 'Yes! We arrange virtual appearances for online launches, webinars, and streaming events. Pricing for virtual appearances is typically 40-50% of in-person rates.'
-    },
-    {
-      id: '9',
-      question: 'What is included in the celebrity appearance?',
-      answer: 'Standard appearances include the celebrity\'s time for the agreed duration. Travel, accommodation, additional performances, or content creation are negotiable and billed separately.'
-    },
-    {
-      id: '10',
-      question: 'How far in advance should we book a celebrity?',
-      answer: 'We recommend booking 2-3 months in advance for major celebrities. However, we handle last-minute requests based on availability. Rush bookings may incur additional fees.'
+  useEffect(() => {
+    // Load FAQs from localStorage
+    const storedBlogs = localStorage.getItem('blog_posts');
+    if (storedBlogs) {
+      const allBlogs = JSON.parse(storedBlogs);
+      const faqBlogs = allBlogs.filter((b: any) => b.category === 'FAQ');
+      if (faqBlogs.length > 0) {
+        setFaqs(faqBlogs.map((b: any) => ({
+          id: b.id,
+          question: b.title,
+          answer: b.content
+        })));
+      }
     }
-  ];
+
+    // Default FAQs if none exist
+    if (faqs.length === 0) {
+      setFaqs([
+        {
+          id: '1',
+          question: 'How do I book a celebrity through EliteFacesBooking?',
+          answer: 'Simply browse our talent roster, click on your preferred celebrity, and fill out the booking form with event details. Our team will review your request and contact you within 24 hours with pricing and availability.'
+        },
+        {
+          id: '2',
+          question: 'What is the typical turnaround time for booking confirmation?',
+          answer: 'We typically provide confirmation within 24-48 hours. For urgent requests, contact us via WhatsApp at +91 9990996091 or +91 7678683436 for priority handling.'
+        },
+        {
+          id: '3',
+          question: 'Do you offer package deals for multiple celebrities?',
+          answer: 'Yes! We offer customized packages for corporate events, product launches, and multi-day campaigns. Contact our team to discuss your specific requirements and budget.'
+        }
+      ]);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen pt-24 pb-20">

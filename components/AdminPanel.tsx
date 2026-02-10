@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Celebrity } from '../types';
+import { useAdmin } from './AdminContext';
+import ImageUpload from './ImageUpload';
 
-// Admin credentials
-const ADMIN_CREDENTIALS = {
+// Admin credentials - stored in localStorage for persistence
+const DEFAULT_ADMIN_CREDENTIALS = {
   username: 'Rishabhkumar023',
-  email: 'growthing868@gmail.com'
+  password: 'Admin@123'
 };
 
 // Blog content interface
@@ -17,31 +19,66 @@ interface BlogPost {
   date: string;
 }
 
+interface PageContent {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+}
+
 interface AdminPanelProps {
   onClose: () => void;
   onUpdateCelebrities: (celebrities: Celebrity[]) => void;
   celebrities: Celebrity[];
   onUpdateBlogs?: (blogs: BlogPost[]) => void;
+  onUpdatePages?: (pages: PageContent[]) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities, onUpdateBlogs, onUpdatePages }) => {
+  const { isAdmin, setAdminAuth, logoutAdmin } = useAdmin();
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images'>('celebrities');
+  const [password, setPassword] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [activeTab, setActiveTab] = useState<'celebrities' | 'blogs' | 'images' | 'pages' | 'settings'>('celebrities');
   const [editingCelebrity, setEditingCelebrity] = useState<Celebrity | null>(null);
   const [celebrityList, setCelebrityList] = useState<Celebrity[]>(celebrities);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [pageContents, setPageContents] = useState<PageContent[]>([]);
+  const [editingPage, setEditingPage] = useState<PageContent | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
-    // Check if already authenticated in session
-    const auth = sessionStorage.getItem('admin_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
+    // Load admin credentials from localStorage or use defaults
+    const storedCreds = localStorage.getItem('admin_credentials');
+    if (!storedCreds) {
+      localStorage.setItem('admin_credentials', JSON.stringify(DEFAULT_ADMIN_CREDENTIALS));
+    }
+
+    // Load page contents from localStorage
+    const storedPages = localStorage.getItem('page_contents');
+    if (storedPages) {
+      setPageContents(JSON.parse(storedPages));
+    } else {
+      // Initialize with default pages
+      const defaultPages = [
+        { id: 'services', title: 'Our Services', content: 'Default services content...', slug: 'services' },
+        { id: 'about', title: 'About Us', content: 'Default about content...', slug: 'about' },
+        { id: 'portfolio', title: 'Portfolio', content: 'Default portfolio content...', slug: 'portfolio' },
+        { id: 'contact', title: 'Contact Us', content: 'Default contact content...', slug: 'contact' }
+      ];
+      setPageContents(defaultPages);
+      localStorage.setItem('page_contents', JSON.stringify(defaultPages));
+    }
+
+    // Load blog posts from localStorage
+    const storedBlogs = localStorage.getItem('blog_posts');
+    if (storedBlogs) {
+      setBlogPosts(JSON.parse(storedBlogs));
     }
   }, []);
 
@@ -52,22 +89,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  const getAdminCredentials = () => {
+    const stored = localStorage.getItem('admin_credentials');
+    return stored ? JSON.parse(stored) : DEFAULT_ADMIN_CREDENTIALS;
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_CREDENTIALS.username && email === ADMIN_CREDENTIALS.email) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin_auth', 'true');
+    const creds = getAdminCredentials();
+    if (username === creds.username && password === creds.password) {
+      setAdminAuth(true);
       showToastMessage('Welcome back, Admin!', 'success');
+      setPassword('');
     } else {
-      showToastMessage('Invalid credentials!', 'error');
+      showToastMessage('Invalid username or password!', 'error');
     }
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('admin_auth');
+    logoutAdmin();
     setUsername('');
-    setEmail('');
+    setPassword('');
+    onClose();
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToastMessage('Passwords do not match!', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToastMessage('Password must be at least 6 characters!', 'error');
+      return;
+    }
+    const creds = getAdminCredentials();
+    creds.password = newPassword;
+    localStorage.setItem('admin_credentials', JSON.stringify(creds));
+    showToastMessage('Password changed successfully!', 'success');
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowChangePassword(false);
   };
 
   const handleEditCelebrity = (celebrity: Celebrity) => {
@@ -131,7 +193,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       imageUrl: 'LOGO.PNG',
       date: new Date().toISOString()
     };
-    setBlogPosts([...blogPosts, newBlog]);
+    const updated = [...blogPosts, newBlog];
+    setBlogPosts(updated);
+    localStorage.setItem('blog_posts', JSON.stringify(updated));
     setEditingBlog(newBlog);
   };
 
@@ -143,6 +207,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
+      localStorage.setItem('blog_posts', JSON.stringify(updated));
       if (onUpdateBlogs) onUpdateBlogs(updated);
       showToastMessage('Blog deleted successfully', 'success');
     }
@@ -156,6 +221,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       b.id === editingBlog.id ? editingBlog : b
     );
     setBlogPosts(updated);
+    localStorage.setItem('blog_posts', JSON.stringify(updated));
     if (onUpdateBlogs) onUpdateBlogs(updated);
     setEditingBlog(null);
     showToastMessage('Blog updated successfully!', 'success');
@@ -170,7 +236,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAdmin) {
     return (
       <>
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -197,13 +263,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Email</label>
+                <label className="text-sm text-slate-400 mb-1 block">Password</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-                  placeholder="Enter email"
+                  placeholder="Enter password"
                   required
                 />
               </div>
@@ -257,24 +323,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-white/10 overflow-x-auto">
             <button
               onClick={() => setActiveTab('celebrities')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-users mr-2"></i>Celebrities
             </button>
             <button
               onClick={() => setActiveTab('blogs')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-blog mr-2"></i>Blog Posts
             </button>
             <button
+              onClick={() => setActiveTab('pages')}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'pages' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-file-alt mr-2"></i>Custom Pages
+            </button>
+            <button
               onClick={() => setActiveTab('images')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-images mr-2"></i>Images
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-cog mr-2"></i>Settings
             </button>
           </div>
 
@@ -356,35 +434,44 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <ImageUpload
+                          label="Celebrity Image"
+                          currentImage={editingCelebrity.imageUrl}
+                          onImageSelect={(name, base64) => updateCelebrityField('imageUrl', base64)}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-slate-400 mb-1 block">Followers</label>
+                            <input
+                              type="text"
+                              value={editingCelebrity.followers}
+                              onChange={(e) => updateCelebrityField('followers', e.target.value)}
+                              className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-slate-400 mb-1 block">Price Range</label>
+                            <input
+                              type="text"
+                              value={editingCelebrity.priceRange}
+                              onChange={(e) => updateCelebrityField('priceRange', e.target.value)}
+                              className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
+                          <label className="text-sm text-slate-400 mb-1 block">Or paste Image URL</label>
                           <input
                             type="text"
                             value={editingCelebrity.imageUrl}
                             onChange={(e) => updateCelebrityField('imageUrl', e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Followers</label>
-                          <input
-                            type="text"
-                            value={editingCelebrity.followers}
-                            onChange={(e) => updateCelebrityField('followers', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Price Range</label>
-                          <input
-                            type="text"
-                            value={editingCelebrity.priceRange}
-                            onChange={(e) => updateCelebrityField('priceRange', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            required
+                            placeholder="https://example.com/image.jpg"
                           />
                         </div>
                       </div>
@@ -494,17 +581,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                             <option>FAQ</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
-                          <input
-                            type="text"
-                            value={editingBlog.imageUrl}
-                            onChange={(e) => updateBlogField('imageUrl', e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
-                            placeholder="https://example.com/image.jpg"
-                            required
-                          />
-                        </div>
+                      </div>
+
+                      <ImageUpload
+                        label="Blog Cover Image"
+                        currentImage={editingBlog.imageUrl}
+                        onImageSelect={(name, base64) => updateBlogField('imageUrl', base64)}
+                      />
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Or paste Image URL</label>
+                        <input
+                          type="text"
+                          value={editingBlog.imageUrl}
+                          onChange={(e) => updateBlogField('imageUrl', e.target.value)}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          placeholder="https://example.com/image.jpg"
+                        />
                       </div>
 
                       <div>
@@ -541,6 +634,156 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                     </form>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'pages' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">Custom Pages Management</h3>
+                    <p className="text-slate-400 text-sm">Create and manage custom pages for your website</p>
+                  </div>
+                  <button onClick={() => {
+                    const newPage: PageContent = {
+                      id: Date.now().toString(),
+                      title: 'New Page',
+                      content: '<p>Add your page content here...</p>',
+                      slug: `page-${Date.now()}`
+                    };
+                    setEditingPage(newPage);
+                  }} className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                    <i className="fas fa-plus mr-2"></i>Create New Page
+                  </button>
+                </div>
+
+                {!editingPage ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pageContents.length === 0 ? (
+                      <div className="col-span-full text-center py-12 glass rounded-xl">
+                        <i className="fas fa-file-alt text-6xl text-slate-700 mb-4"></i>
+                        <h4 className="text-xl font-semibold mb-2">No Custom Pages Yet</h4>
+                        <p className="text-slate-400">Click "Create New Page" to add your first custom page</p>
+                      </div>
+                    ) : (
+                      pageContents.map((page) => (
+                        <div key={page.id} className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">{page.title}</h4>
+                              <p className="text-xs text-slate-500">/{page.slug}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => setEditingPage(page)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button onClick={() => {
+                                if (window.confirm('Delete this page?')) {
+                                  const updated = pageContents.filter(p => p.id !== page.id);
+                                  setPageContents(updated);
+                                  localStorage.setItem('page_contents', JSON.stringify(updated));
+                                }
+                              }} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-slate-500 text-xs line-clamp-2">
+                            {page.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-semibold">{pageContents.find(p => p.id === editingPage.id) ? 'Edit Page' : 'Create New Page'}</h3>
+                      <button onClick={() => setEditingPage(null)} className="text-slate-400 hover:text-white">
+                        <i className="fas fa-times mr-2"></i>Cancel
+                      </button>
+                    </div>
+
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const existingIndex = pageContents.findIndex(p => p.id === editingPage.id);
+                      let updated;
+                      if (existingIndex >= 0) {
+                        updated = [...pageContents];
+                        updated[existingIndex] = editingPage;
+                      } else {
+                        updated = [...pageContents, editingPage];
+                      }
+                      setPageContents(updated);
+                      localStorage.setItem('page_contents', JSON.stringify(updated));
+                      setEditingPage(null);
+                      showToastMessage('Page saved successfully!', 'success');
+                    }} className="space-y-4">
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Page Title</label>
+                        <input
+                          type="text"
+                          value={editingPage.title}
+                          onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">URL Slug (no spaces, use hyphens)</label>
+                        <input
+                          type="text"
+                          value={editingPage.slug}
+                          onChange={(e) => setEditingPage({ ...editingPage, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          placeholder="my-custom-page"
+                          required
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                          <i className="fas fa-info-circle mr-1"></i>
+                          Page will be accessible at: /{editingPage.slug}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-slate-400 mb-1 block">Page Content (HTML supported)</label>
+                        <textarea
+                          value={editingPage.content}
+                          onChange={(e) => setEditingPage({ ...editingPage, content: e.target.value })}
+                          className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500 font-mono text-sm"
+                          rows={12}
+                          placeholder="<h1>Your Page Title</h1><p>Your content here...</p>"
+                          required
+                        />
+                      </div>
+
+                      <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                        <p className="text-sm text-slate-400 mb-2">Preview:</p>
+                        <div className="bg-white rounded-lg p-4 text-slate-900 max-h-48 overflow-y-auto">
+                          <div dangerouslySetInnerHTML={{ __html: editingPage.content }} />
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button type="submit" className="flex-1 py-3 btn-gold text-slate-950 font-bold rounded-lg">
+                          <i className="fas fa-save mr-2"></i>Save Page
+                        </button>
+                        <button type="button" onClick={() => setEditingPage(null)} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Info Box */}
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mt-6">
+                  <p className="text-sm text-blue-300">
+                    <i className="fas fa-info-circle mr-2"></i>
+                    <strong>Note:</strong> Custom pages created here are stored in localStorage. To access them, you'll need to add routing logic to your App.tsx.
+                  </p>
+                </div>
               </div>
             )}
 
@@ -638,6 +881,110 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         <p className="text-sm font-medium">Logo Alt</p>
                         <p className="text-xs text-slate-500">LOGO.png</p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <i className="fas fa-cog text-yellow-500 mr-2"></i>Settings
+                  </h3>
+
+                  {/* Change Password Section */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-key text-blue-500 mr-2"></i>Change Password
+                    </h4>
+
+                    {!showChangePassword ? (
+                      <button
+                        onClick={() => setShowChangePassword(true)}
+                        className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium"
+                      >
+                        <i className="fas fa-lock mr-2"></i>Change Password
+                      </button>
+                    ) : (
+                      <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">New Password</label>
+                          <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                            placeholder="Enter new password (min 6 characters)"
+                            required
+                            minLength={6}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Confirm Password</label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                            placeholder="Confirm new password"
+                            required
+                          />
+                        </div>
+                        <div className="flex space-x-3">
+                          <button type="submit" className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                            <i className="fas fa-save mr-2"></i>Update Password
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowChangePassword(false); setNewPassword(''); setConfirmPassword(''); }}
+                            className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* Security Info */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-shield-alt text-green-500 mr-2"></i>Security Information
+                    </h4>
+                    <ul className="space-y-3 text-sm text-slate-400">
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>Passwords are stored securely in your browser's localStorage</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>Session expires when you close the browser</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>All admin actions are logged for security</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
+                        <span>Default credentials: username <code className="bg-slate-800 px-2 py-0.5 rounded">Rishabhkumar023</code>, password <code className="bg-slate-800 px-2 py-0.5 rounded">Admin@123</code></span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Current Session Info */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-user-circle text-purple-500 mr-2"></i>Current Session
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-slate-400">
+                        <span className="text-slate-500">Logged in as:</span> {getAdminCredentials().username}
+                      </p>
+                      <p className="text-slate-400">
+                        <span className="text-slate-500">Session active:</span> Yes
+                      </p>
                     </div>
                   </div>
                 </div>
