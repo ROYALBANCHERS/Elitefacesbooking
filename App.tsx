@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CELEBRITIES, CATEGORIES } from './constants';
-import { Celebrity, Category, BlogPost, CustomPageData } from './types';
+import { Celebrity, Category, BlogPost } from './types';
 import CelebrityCard from './components/CelebrityCard';
 import AIAssistant from './components/AIAssistant';
 import BookingModal from './components/BookingModal';
@@ -9,7 +9,7 @@ import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
 import SharedFooter from './components/SharedFooter';
-import { RouterProvider, useRouter, Page } from './components/Router';
+import { RouterProvider, useRouter } from './components/Router';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
 import BlogIndustryTrends from './components/pages/BlogIndustryTrends';
@@ -21,7 +21,6 @@ import WhyChooseUs from './components/pages/WhyChooseUs';
 import FAQsPage from './components/pages/FAQsPage';
 import ContactUs from './components/pages/ContactUs';
 import Portfolio from './components/pages/Portfolio';
-import ArticleDetail from './components/ArticleDetail';
 import CustomPage from './components/CustomPage';
 import BlogListingPage from './components/BlogListingPage';
 import BlogDetailPage from './components/BlogDetailPage';

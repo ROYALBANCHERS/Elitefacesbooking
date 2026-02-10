@@ -22,5 +22,19 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './'),
       },
     },
+
+    build: {
+      // Increase chunk size warning limit
+      chunkSizeWarningLimit: 700,
+      // Manual chunks for better code splitting
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            'ai-vendor': ['@google/genai'],
+          },
+        },
+      },
+    },
   };
 });

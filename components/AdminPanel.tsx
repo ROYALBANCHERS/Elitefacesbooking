@@ -71,8 +71,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
 
   useEffect(() => {
     const auth = sessionStorage.getItem('admin_auth');
+    const savedUsername = sessionStorage.getItem('admin_username');
     if (auth === 'true') {
       setIsAuthenticated(true);
+      if (savedUsername) {
+        setUsername(savedUsername);
+      }
     }
   }, []);
 
@@ -85,12 +89,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_CREDENTIALS.username && email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+    // Trim inputs to avoid whitespace issues
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (
+      trimmedUsername === ADMIN_CREDENTIALS.username &&
+      trimmedEmail === ADMIN_CREDENTIALS.email &&
+      trimmedPassword === ADMIN_CREDENTIALS.password
+    ) {
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_auth', 'true');
+      sessionStorage.setItem('admin_username', trimmedUsername);
       showToastMessage('Welcome back, Admin!', 'success');
+      // Clear inputs
+      setUsername('');
+      setEmail('');
+      setPassword('');
     } else {
-      showToastMessage('Invalid credentials!', 'error');
+      showToastMessage('Invalid credentials! Please check your username, email, and password.', 'error');
     }
   };
 
