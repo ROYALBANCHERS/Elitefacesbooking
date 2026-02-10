@@ -16,7 +16,9 @@ jobs:
           node-version: 20
       - uses: actions/configure-pages@v4
       - name: Install dependencies
-        run: npm install --include=dev
+        run: npm install
+        env:
+          NODE_ENV: development
       - name: Verify vite installation
         run: npx vite --version
       - name: Build
