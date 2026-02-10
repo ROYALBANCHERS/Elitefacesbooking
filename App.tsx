@@ -10,6 +10,7 @@ import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
 import SharedFooter from './components/SharedFooter';
 import { RouterProvider, useRouter } from './components/Router';
+import { ThemeProvider } from './ThemeContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
 import BlogIndustryTrends from './components/pages/BlogIndustryTrends';
@@ -21,6 +22,7 @@ import WhyChooseUs from './components/pages/WhyChooseUs';
 import FAQsPage from './components/pages/FAQsPage';
 import ContactUs from './components/pages/ContactUs';
 import Portfolio from './components/pages/Portfolio';
+import ArticleDetail from './components/ArticleDetail';
 import CustomPage from './components/CustomPage';
 import BlogListingPage from './components/BlogListingPage';
 import BlogDetailPage from './components/BlogDetailPage';
@@ -443,6 +445,7 @@ const AppContainer: React.FC<AppContainerProps> = () => {
       {currentPage === 'faqs' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><FAQsPage /></PageWrapper>}
       {currentPage === 'contact' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><ContactUs /></PageWrapper>}
       {currentPage === 'portfolio' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><Portfolio /></PageWrapper>}
+      {currentPage === 'article-detail' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><ArticleDetail /></PageWrapper>}
       {currentPage === 'blog-listing' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogListingPage section={pageParams || undefined} /></PageWrapper>}
       {currentPage === 'blog-detail' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><BlogDetailPage blogId={pageParams || undefined} /></PageWrapper>}
       {currentPage === 'custom-page' && <PageWrapper onAdminClick={() => setShowAdminPanel(true)}><CustomPage pageId={pageParams || undefined} /></PageWrapper>}
@@ -461,9 +464,11 @@ const AppContainer: React.FC<AppContainerProps> = () => {
 
 const App: React.FC = () => {
   return (
-    <RouterProvider>
-      <AppContainer />
-    </RouterProvider>
+    <ThemeProvider>
+      <RouterProvider>
+        <AppContainer />
+      </RouterProvider>
+    </ThemeProvider>
   );
 };
 

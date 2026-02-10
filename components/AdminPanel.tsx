@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Celebrity, BlogPost, CustomPageData } from '../types';
+import { useTheme } from '../ThemeContext';
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
@@ -24,6 +25,7 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, celebrities }) => {
+  const { theme, toggleTheme, isDark } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -444,6 +446,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
+                title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              >
+                <i className={`fas ${isDark ? 'fa-sun' : 'fa-moon'} mr-2`}></i>
+                {isDark ? 'Light' : 'Dark'}
+              </button>
               <button onClick={handleLogout} className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors">
                 <i className="fas fa-sign-out-alt mr-2"></i>Logout
               </button>

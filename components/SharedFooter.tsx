@@ -97,8 +97,12 @@ const SharedFooter: React.FC<SharedFooterProps> = ({ onAdminClick }) => {
           <button onClick={() => navigateTo('privacy')} className="text-slate-500 hover:text-yellow-500 text-xs transition-colors">Privacy Policy</button>
           <button onClick={() => navigateTo('faqs')} className="text-slate-500 hover:text-yellow-500 text-xs transition-colors">FAQs</button>
           {onAdminClick && (
-            <button onClick={onAdminClick} className="text-slate-600 hover:text-yellow-500 text-xs transition-colors ml-4">
-              <i className="fas fa-lock mr-1"></i>Admin
+            <button
+              onClick={onAdminClick}
+              className="ml-4 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 text-yellow-500 text-xs rounded-lg transition-colors flex items-center gap-2 mx-auto sm:mx-0"
+            >
+              <i className="fas fa-user-shield"></i>
+              <span>Admin Login</span>
             </button>
           )}
         </div>
