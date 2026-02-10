@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRouter } from '../Router';
+import { useRouter } from './Router';
 
 const SharedFooter: React.FC = () => {
   const { navigateTo } = useRouter();
