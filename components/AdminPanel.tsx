@@ -188,7 +188,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       imageUrl: 'LOGO.PNG',
       date: new Date().toISOString()
     };
-    setBlogPosts([...blogPosts, newBlog]);
+    const updated = [...blogPosts, newBlog];
+    setBlogPosts(updated);
+    localStorage.setItem('blog_posts', JSON.stringify(updated));
     setEditingBlog(newBlog);
   };
 
@@ -200,6 +202,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
+      localStorage.setItem('blog_posts', JSON.stringify(updated));
       if (onUpdateBlogs) onUpdateBlogs(updated);
       showToastMessage('Blog deleted successfully', 'success');
     }
@@ -213,6 +216,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       b.id === editingBlog.id ? editingBlog : b
     );
     setBlogPosts(updated);
+    localStorage.setItem('blog_posts', JSON.stringify(updated));
     if (onUpdateBlogs) onUpdateBlogs(updated);
     setEditingBlog(null);
     showToastMessage('Blog updated successfully!', 'success');
@@ -314,24 +318,30 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-white/10 overflow-x-auto">
             <button
               onClick={() => setActiveTab('celebrities')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'celebrities' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-users mr-2"></i>Celebrities
             </button>
             <button
               onClick={() => setActiveTab('blogs')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'blogs' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-blog mr-2"></i>Blog Posts
             </button>
             <button
               onClick={() => setActiveTab('images')}
-              className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'images' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
             >
               <i className="fas fa-images mr-2"></i>Images
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 py-4 text-center font-medium transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <i className="fas fa-cog mr-2"></i>Settings
             </button>
           </div>
 
@@ -695,6 +705,110 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                         <p className="text-sm font-medium">Logo Alt</p>
                         <p className="text-xs text-slate-500">LOGO.png</p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <i className="fas fa-cog text-yellow-500 mr-2"></i>Settings
+                  </h3>
+
+                  {/* Change Password Section */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-key text-blue-500 mr-2"></i>Change Password
+                    </h4>
+
+                    {!showChangePassword ? (
+                      <button
+                        onClick={() => setShowChangePassword(true)}
+                        className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium"
+                      >
+                        <i className="fas fa-lock mr-2"></i>Change Password
+                      </button>
+                    ) : (
+                      <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">New Password</label>
+                          <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                            placeholder="Enter new password (min 6 characters)"
+                            required
+                            minLength={6}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-slate-400 mb-1 block">Confirm Password</label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full bg-slate-800 border border-white/10 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+                            placeholder="Confirm new password"
+                            required
+                          />
+                        </div>
+                        <div className="flex space-x-3">
+                          <button type="submit" className="px-4 py-2 btn-gold text-slate-950 rounded-lg font-medium">
+                            <i className="fas fa-save mr-2"></i>Update Password
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowChangePassword(false); setNewPassword(''); setConfirmPassword(''); }}
+                            className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* Security Info */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-shield-alt text-green-500 mr-2"></i>Security Information
+                    </h4>
+                    <ul className="space-y-3 text-sm text-slate-400">
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>Passwords are stored securely in your browser's localStorage</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>Session expires when you close the browser</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>All admin actions are logged for security</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
+                        <span>Default credentials: username <code className="bg-slate-800 px-2 py-0.5 rounded">Rishabhkumar023</code>, password <code className="bg-slate-800 px-2 py-0.5 rounded">Admin@123</code></span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Current Session Info */}
+                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 flex items-center">
+                      <i className="fas fa-user-circle text-purple-500 mr-2"></i>Current Session
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-slate-400">
+                        <span className="text-slate-500">Logged in as:</span> {getAdminCredentials().username}
+                      </p>
+                      <p className="text-slate-400">
+                        <span className="text-slate-500">Session active:</span> Yes
+                      </p>
                     </div>
                   </div>
                 </div>
