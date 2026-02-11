@@ -244,10 +244,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
           setTimeout(() => setSyncStatus('idle'), 2000);
           showToastMessage('✓ Synced to Firebase! Live for all users.', 'success');
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           setSyncStatus('error');
-          console.error('Firebase sync failed:', error);
-          showToastMessage('⚠ Saved locally only. Firebase sync failed.', 'error');
+          const errorMsg = error?.message || 'Unknown error';
+          console.error('Firebase sync failed:', errorMsg);
+          showToastMessage(`⚠ Firebase sync failed: ${errorMsg}`, 'error');
           setTimeout(() => setSyncStatus('idle'), 3000);
         });
     } else {

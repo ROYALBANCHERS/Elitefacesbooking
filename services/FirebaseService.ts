@@ -35,14 +35,20 @@ class FirebaseService {
     if (initialized) return true;
 
     try {
+      console.log('🔥 Initializing Firebase...');
+
       // Load Firebase SDKs dynamically
       const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
       const { getDatabase, ref, set, get, update, remove, onValue } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+
+      console.log('✓ Firebase SDKs loaded');
 
       // Initialize Firebase
       app = initializeApp(firebaseConfig);
       database = getDatabase(app);
       initialized = true;
+
+      console.log('✓ Firebase initialized:', firebaseConfig.projectId);
 
       // Store functions for later use
       (this as any).ref = ref;
@@ -53,8 +59,9 @@ class FirebaseService {
       (this as any).onValue = onValue;
 
       return true;
-    } catch (error) {
-      console.error('Firebase initialization error:', error);
+    } catch (error: any) {
+      console.error('❌ Firebase initialization error:', error?.message || error);
+      alert('Firebase Error: ' + (error?.message || 'Failed to connect. Check console.'));
       return false;
     }
   }
@@ -155,13 +162,15 @@ class FirebaseService {
     if (!initialized) await this.initialize();
 
     try {
+      console.log('💾 Saving', celebrities.length, 'celebrities to Firebase...');
       await (this as any).update(this.db('/'), {
         celebrities,
         lastUpdated: new Date().toISOString()
       });
-    } catch (error) {
-      console.error('Error saving celebrities:', error);
-      throw error;
+      console.log('✓ Celebrities saved to Firebase');
+    } catch (error: any) {
+      console.error('❌ Error saving celebrities:', error?.message || error);
+      throw new Error(error?.message || 'Failed to save celebrities');
     }
   }
 
@@ -172,13 +181,15 @@ class FirebaseService {
     if (!initialized) await this.initialize();
 
     try {
+      console.log('💾 Saving', blogs.length, 'blogs to Firebase...');
       await (this as any).update(this.db('/'), {
         blogs,
         lastUpdated: new Date().toISOString()
       });
-    } catch (error) {
-      console.error('Error saving blogs:', error);
-      throw error;
+      console.log('✓ Blogs saved to Firebase');
+    } catch (error: any) {
+      console.error('❌ Error saving blogs:', error?.message || error);
+      throw new Error(error?.message || 'Failed to save blogs');
     }
   }
 
@@ -189,13 +200,15 @@ class FirebaseService {
     if (!initialized) await this.initialize();
 
     try {
+      console.log('💾 Saving', pages.length, 'custom pages to Firebase...');
       await (this as any).update(this.db('/'), {
         customPages: pages,
         lastUpdated: new Date().toISOString()
       });
-    } catch (error) {
-      console.error('Error saving custom pages:', error);
-      throw error;
+      console.log('✓ Custom pages saved to Firebase');
+    } catch (error: any) {
+      console.error('❌ Error saving custom pages:', error?.message || error);
+      throw new Error(error?.message || 'Failed to save pages');
     }
   }
 
@@ -206,13 +219,15 @@ class FirebaseService {
     if (!initialized) await this.initialize();
 
     try {
+      console.log('💾 Saving page contents to Firebase...');
       await (this as any).update(this.db('/'), {
         pageContents: contents,
         lastUpdated: new Date().toISOString()
       });
-    } catch (error) {
-      console.error('Error saving page contents:', error);
-      throw error;
+      console.log('✓ Page contents saved to Firebase');
+    } catch (error: any) {
+      console.error('❌ Error saving page contents:', error?.message || error);
+      throw new Error(error?.message || 'Failed to save contents');
     }
   }
 
