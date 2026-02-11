@@ -158,7 +158,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       const updated = celebrityList.filter(c => c.id !== id);
       setCelebrityList(updated);
       onUpdateCelebrities(updated);
-      showToastMessage('Celebrity deleted successfully', 'success');
+      dataService.setCelebrities(updated); // Save to DataService
+      showToastMessage('Celebrity deleted! Click "Publish" to make changes live.', 'success');
     }
   };
 
@@ -171,8 +172,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setCelebrityList(updated);
     onUpdateCelebrities(updated);
+    dataService.setCelebrities(updated); // Save to DataService
     setEditingCelebrity(null);
-    showToastMessage('Celebrity updated successfully!', 'success');
+    showToastMessage('Celebrity updated! Click "Publish" button to make changes live for all users.', 'success');
   };
 
   const handleAddCelebrity = () => {
@@ -231,7 +233,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
       localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
-      showToastMessage('Blog deleted successfully', 'success');
+      dataService.setBlogs(updated); // Save to DataService
+      showToastMessage('Blog deleted! Click "Publish" to make changes live.', 'success');
     }
   };
 
@@ -244,8 +247,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setBlogPosts(updated);
     localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
+    dataService.setBlogs(updated); // Save to DataService
     setEditingBlog(null);
-    showToastMessage('Blog saved successfully! It will appear on the website.', 'success');
+    showToastMessage('Blog saved! Click "Publish" to make it live for all users.', 'success');
   };
 
   const updateBlogField = (field: keyof BlogPost, value: any) => {
@@ -284,7 +288,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       const updated = customPages.filter(p => p.id !== id);
       setCustomPages(updated);
       localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
-      showToastMessage('Page deleted successfully', 'success');
+      dataService.setCustomPages(updated); // Save to DataService
+      showToastMessage('Page deleted! Click "Publish" to make changes live.', 'success');
     }
   };
 
@@ -297,8 +302,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setCustomPages(updated);
     localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
+    dataService.setCustomPages(updated); // Save to DataService
     setEditingCustomPage(null);
-    showToastMessage('Custom page saved successfully!', 'success');
+    showToastMessage('Page saved! Click "Publish" to make it live for all users.', 'success');
   };
 
   const updateCustomPageField = (field: keyof CustomPageData, value: any) => {
@@ -450,6 +456,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              {/* Publish to Live Button - NEW */}
+              <button
+                onClick={() => {
+                  const dataStr = dataService.exportData();
+                  const blob = new Blob([dataStr], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `elitefaces-data-${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  showToastMessage('Data exported! Replace data.json in project and commit to GitHub.', 'success');
+                }}
+                className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors flex items-center"
+                title="Download data to publish changes for all users"
+              >
+                <i className="fas fa-cloud-upload-alt mr-2"></i>
+                <span className="hidden sm:inline">Publish</span>
+              </button>
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
