@@ -10,7 +10,7 @@ import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
 import SharedFooter from './components/SharedFooter';
 import { RouterProvider, useRouter } from './components/Router';
-import { ThemeProvider } from './ThemeContext';
+import { ThemeProvider, useTheme } from './ThemeContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
 import BlogIndustryTrends from './components/pages/BlogIndustryTrends';
@@ -28,6 +28,7 @@ import BlogListingPage from './components/BlogListingPage';
 import BlogDetailPage from './components/BlogDetailPage';
 
 const HomePage: React.FC = () => {
+  const { theme, toggleTheme, isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingCelebrity, setBookingCelebrity] = useState<Celebrity | null>(null);
@@ -156,6 +157,15 @@ const HomePage: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6 text-sm font-medium tracking-widest text-slate-300">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-all border border-white/10"
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            >
+              <i className={`fas ${isDark ? 'fa-sun text-yellow-400' : 'fa-moon text-slate-600'}`}></i>
+              <span className="text-xs">{isDark ? 'Light' : 'Dark'}</span>
+            </button>
             <button onClick={() => handleNavigateAndScroll('home', 'roster')} className="hover:text-yellow-500 transition-colors" title="Browse our talent roster">TALENT ROSTER</button>
             <button onClick={() => navigateTo('services')} className="hover:text-yellow-500 transition-colors" title="View our services">SERVICES</button>
             <button onClick={() => navigateTo('about')} className="hover:text-yellow-500 transition-colors" title="Learn about us">ABOUT</button>
@@ -195,6 +205,14 @@ const HomePage: React.FC = () => {
         {showMobileMenu && (
           <div className="md:hidden glass border-t border-white/10 mt-3 py-4 px-6 absolute top-full left-0 right-0 z-40">
             <div className="flex flex-col space-y-4">
+              {/* Theme Toggle in Mobile Menu */}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-center space-x-2 text-left text-slate-300 hover:text-yellow-500 transition-colors py-3 px-4 bg-slate-800/30 rounded-lg border border-white/10"
+              >
+                <i className={`fas ${isDark ? 'fa-sun text-yellow-400' : 'fa-moon text-slate-400'}`}></i>
+                <span>{isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</span>
+              </button>
               <button
                 onClick={() => handleNavigateAndScroll('home', 'roster')}
                 className="text-left text-slate-300 hover:text-yellow-500 transition-colors py-2 text-lg font-medium"

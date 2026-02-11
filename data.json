@@ -1,0 +1,20 @@
+{
+  "celebrities": [],
+  "blogs": [],
+  "customPages": [],
+  "pageContents": [
+    {
+      "id": "hero-title",
+      "title": "Hero Title",
+      "content": "Elevate Your Brand with Iconic Faces",
+      "section": "home"
+    },
+    {
+      "id": "hero-subtitle",
+      "title": "Hero Subtitle",
+      "content": "India's Leading Talent Agency",
+      "section": "home"
+    }
+  ],
+  "lastUpdated": null
+}

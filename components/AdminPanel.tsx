@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Celebrity, BlogPost, CustomPageData, BlogPlacement, HomepagePosition } from '../types';
 import { useTheme } from '../ThemeContext';
+import { dataService } from '../services/DataService';
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
@@ -1092,6 +1093,74 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
 
+                {/* Data Export/Import Section - NEW */}
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
+                  <h4 className="font-semibold mb-4 text-yellow-500">
+                    <i className="fas fa-cloud-upload-alt mr-2"></i>Publish Changes to Live Site
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="bg-yellow-500/5 rounded-lg p-4 border border-yellow-500/20">
+                      <p className="text-sm text-yellow-200 mb-2">
+                        <i className="fas fa-info-circle mr-2"></i>
+                        <strong>Important:</strong> To make your changes visible to all users, you need to export the data and commit it to GitHub.
+                      </p>
+                      <ol className="text-xs text-yellow-200/80 space-y-1 ml-6 list-decimal">
+                        <li>Click "Export Data" below to download the data file</li>
+                        <li>Replace the <code className="bg-black/30 px-1 rounded">data.json</code> file in your project with the downloaded file</li>
+                        <li>Commit and push the changes to GitHub</li>
+                        <li>GitHub Actions will automatically deploy the changes</li>
+                      </ol>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => {
+                          const dataStr = dataService.exportData();
+                          const blob = new Blob([dataStr], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `elitefaces-data-${new Date().toISOString().split('T')[0]}.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                          showToastMessage('Data exported successfully! Now replace data.json in your project.', 'success');
+                        }}
+                        className="px-6 py-3 bg-green-500/20 text-green-400 rounded-lg font-medium hover:bg-green-500/30 flex items-center"
+                      >
+                        <i className="fas fa-download mr-2"></i>Export Data
+                      </button>
+
+                      <label className="px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg font-medium hover:bg-blue-500/30 flex items-center cursor-pointer">
+                        <i className="fas fa-upload mr-2"></i>Import Data
+                        <input
+                          type="file"
+                          accept=".json"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                try {
+                                  const data = event.target?.result as string;
+                                  dataService.importData(data);
+                                  // Refresh the UI
+                                  window.location.reload();
+                                } catch (error) {
+                                  showToastMessage('Failed to import data', 'error');
+                                }
+                              };
+                              reader.readAsText(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
                   <h4 className="font-semibold mb-4">Cache Management</h4>
                   <div className="space-y-4">
@@ -1137,6 +1206,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                     <p><strong className="text-white">Celebrities:</strong> Add/Edit celebrity profiles. Upload photos directly from your device.</p>
                     <p><strong className="text-white">Blog Posts:</strong> Create blog articles. The "Section" field creates a navigation link that users can click to view all posts in that section.</p>
                     <p><strong className="text-white">Custom Pages:</strong> Create standalone pages with custom URLs. Perfect for About, Services, or any custom content.</p>
+                    <p><strong className="text-white">Publish Changes:</strong> Use Export Data above to download your changes and commit to GitHub for live deployment.</p>
                   </div>
                 </div>
               </div>

@@ -1,0 +1,32 @@
+# Elite Faces Booking - Robots.txt Configuration
+# Allow search engines to crawl the website
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /*.css
+Allow: /*.js
+Allow: /*.json
+
+# Disallow crawling of unnecessary paths
+Disallow: /admin/
+Disallow: /private/
+Disallow: /.next/
+
+# Sitemaps help search engines find your content faster
+Sitemap: https://elitefacesbooking.vercel.app/sitemap.xml
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0
+
+# Specific crawl delays for other bots
+User-agent: *
+Crawl-delay: 1
+Request-rate: 1/1s
