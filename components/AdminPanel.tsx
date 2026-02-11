@@ -49,7 +49,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
 
   // Firebase state
   const [firebaseEnabled, setFirebaseEnabled] = useState(false);
-  const [savingToFirebase, setSavingToFirebase] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -195,29 +194,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCelebrity(celebrity);
   };
 
-  const handleDeleteCelebrity = async (id: string) => {
+  const handleDeleteCelebrity = (id: string) => {
     if (window.confirm('Are you sure you want to delete this celebrity?')) {
       const updated = celebrityList.filter(c => c.id !== id);
       setCelebrityList(updated);
       onUpdateCelebrities(updated);
       dataService.setCelebrities(updated);
+      setEditingCelebrity(null);
 
+      // Show immediate success
+      showToastMessage('Celebrity deleted!', 'success');
+
+      // Sync to Firebase in background
       if (firebaseEnabled) {
-        setSavingToFirebase(true);
-        try {
-          await firebaseService.saveCelebrities(updated);
-          showToastMessage('Celebrity deleted & synced to Firebase!', 'success');
-        } catch (error) {
-          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
-        }
-        setSavingToFirebase(false);
-      } else {
-        showToastMessage('Celebrity deleted! Click "Publish" to make changes live.', 'success');
+        firebaseService.saveCelebrities(updated).catch(() => {
+          showToastMessage('Saved locally only (Firebase sync failed)', 'error');
+        });
       }
     }
   };
 
-  const handleSaveCelebrity = async (e: React.FormEvent) => {
+  const handleSaveCelebrity = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCelebrity) return;
 
@@ -227,21 +224,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setCelebrityList(updated);
     onUpdateCelebrities(updated);
     dataService.setCelebrities(updated);
-
-    // Save to Firebase if enabled
-    if (firebaseEnabled) {
-      setSavingToFirebase(true);
-      try {
-        await firebaseService.saveCelebrities(updated);
-        showToastMessage('Celebrity updated & synced to Firebase! Live for all users.', 'success');
-      } catch (error) {
-        showToastMessage('Saved locally! Firebase sync failed.', 'error');
-      }
-      setSavingToFirebase(false);
-    } else {
-      showToastMessage('Celebrity updated! Click "Publish" to make changes live.', 'success');
-    }
     setEditingCelebrity(null);
+
+    // Show immediate success - don't wait for Firebase
+    if (firebaseEnabled) {
+      showToastMessage('Celebrity saved! Syncing to Firebase...', 'success');
+      // Sync in background - don't await
+      firebaseService.saveCelebrities(updated).catch(() => {
+        // Silent fail - user already sees success message
+        console.warn('Firebase sync failed, data saved locally');
+      });
+    } else {
+      showToastMessage('Celebrity saved! Click "Publish" to make changes live.', 'success');
+    }
   };
 
   const handleAddCelebrity = () => {
@@ -295,29 +290,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingBlog(blog);
   };
 
-  const handleDeleteBlog = async (id: string) => {
+  const handleDeleteBlog = (id: string) => {
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
       localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
       dataService.setBlogs(updated);
 
+      showToastMessage('Blog deleted!', 'success');
+
+      // Sync to Firebase in background
       if (firebaseEnabled) {
-        setSavingToFirebase(true);
-        try {
-          await firebaseService.saveBlogs(updated);
-          showToastMessage('Blog deleted & synced to Firebase!', 'success');
-        } catch (error) {
-          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
-        }
-        setSavingToFirebase(false);
-      } else {
-        showToastMessage('Blog deleted! Click "Publish" to make changes live.', 'success');
+        firebaseService.saveBlogs(updated).catch(() => {
+          console.warn('Firebase sync failed');
+        });
       }
     }
   };
 
-  const handleSaveBlog = async (e: React.FormEvent) => {
+  const handleSaveBlog = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBlog) return;
 
@@ -327,20 +318,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setBlogPosts(updated);
     localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
     dataService.setBlogs(updated);
+    setEditingBlog(null);
 
     if (firebaseEnabled) {
-      setSavingToFirebase(true);
-      try {
-        await firebaseService.saveBlogs(updated);
-        showToastMessage('Blog saved & synced to Firebase! Live for all users.', 'success');
-      } catch (error) {
-        showToastMessage('Saved locally! Firebase sync failed.', 'error');
-      }
-      setSavingToFirebase(false);
+      showToastMessage('Blog saved! Syncing to Firebase...', 'success');
+      firebaseService.saveBlogs(updated).catch(() => {
+        console.warn('Firebase sync failed');
+      });
     } else {
       showToastMessage('Blog saved! Click "Publish" to make it live for all users.', 'success');
     }
-    setEditingBlog(null);
   };
 
   const updateBlogField = (field: keyof BlogPost, value: any) => {
@@ -374,29 +361,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCustomPage(page);
   };
 
-  const handleDeleteCustomPage = async (id: string) => {
+  const handleDeleteCustomPage = (id: string) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
       const updated = customPages.filter(p => p.id !== id);
       setCustomPages(updated);
       localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
       dataService.setCustomPages(updated);
 
+      showToastMessage('Page deleted!', 'success');
+
       if (firebaseEnabled) {
-        setSavingToFirebase(true);
-        try {
-          await firebaseService.saveCustomPages(updated);
-          showToastMessage('Page deleted & synced to Firebase!', 'success');
-        } catch (error) {
-          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
-        }
-        setSavingToFirebase(false);
-      } else {
-        showToastMessage('Page deleted! Click "Publish" to make changes live.', 'success');
+        firebaseService.saveCustomPages(updated).catch(() => {
+          console.warn('Firebase sync failed');
+        });
       }
     }
   };
 
-  const handleSaveCustomPage = async (e: React.FormEvent) => {
+  const handleSaveCustomPage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCustomPage) return;
 
@@ -406,20 +388,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setCustomPages(updated);
     localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
     dataService.setCustomPages(updated);
+    setEditingCustomPage(null);
 
     if (firebaseEnabled) {
-      setSavingToFirebase(true);
-      try {
-        await firebaseService.saveCustomPages(updated);
-        showToastMessage('Page saved & synced to Firebase! Live for all users.', 'success');
-      } catch (error) {
-        showToastMessage('Saved locally! Firebase sync failed.', 'error');
-      }
-      setSavingToFirebase(false);
+      showToastMessage('Page saved! Syncing to Firebase...', 'success');
+      firebaseService.saveCustomPages(updated).catch(() => {
+        console.warn('Firebase sync failed');
+      });
     } else {
       showToastMessage('Page saved! Click "Publish" to make it live for all users.', 'success');
     }
-    setEditingCustomPage(null);
   };
 
   const updateCustomPageField = (field: keyof CustomPageData, value: any) => {
@@ -577,11 +555,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                   ) : (
                     <span className="px-2 py-0.5 bg-slate-500/20 text-slate-400 text-xs rounded-full flex items-center">
                       <i className="fas fa-database mr-1"></i>Local Only
-                    </span>
-                  )}
-                  {savingToFirebase && (
-                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full flex items-center">
-                      <i className="fas fa-spinner fa-spin mr-1"></i>Saving...
                     </span>
                   )}
                 </div>

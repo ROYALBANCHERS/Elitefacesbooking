@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // For Vercel: always use '/', for GitHub Pages use '/Elitefacesbooking/'
-    base: '/',
+    // Auto-detect platform: Vercel uses '/', GitHub Pages uses '/Elitefacesbooking/'
+    base: process.env.VERCEL ? '/' : '/Elitefacesbooking/',
 
     plugins: [react()],
 
