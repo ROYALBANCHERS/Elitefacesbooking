@@ -1324,6 +1324,59 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                   </div>
                 )}
 
+                {/* Initialize Firebase Database Section - Only when Firebase enabled but database is empty */}
+                {firebaseEnabled && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 text-green-500">
+                      <i className="fas fa-play-circle mr-2"></i>Initialize Firebase Database
+                    </h4>
+                    <div className="space-y-4">
+                      <p className="text-sm text-green-200">
+                        <i className="fas fa-info-circle mr-2"></i>
+                        Click the button below to initialize your Firebase database with existing celebrities data. This only needs to be done once.
+                      </p>
+                      <button
+                        onClick={async () => {
+                          try {
+                            showToastMessage('Initializing Firebase database...', 'success');
+
+                            // Get current data from localStorage
+                            const savedCelebs = localStorage.getItem('elitefaces_celebrities');
+                            const savedBlogs = localStorage.getItem('elitefaces_blogs');
+                            const savedPages = localStorage.getItem('elitefaces_custom_pages');
+                            const savedContents = localStorage.getItem('elitefaces_page_contents');
+
+                            const celebrities = savedCelebs ? JSON.parse(savedCelebs) : [];
+                            const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                            const customPages = savedPages ? JSON.parse(savedPages) : [];
+                            const pageContents = savedContents ? JSON.parse(savedContents) : [];
+
+                            // Initialize Firebase
+                            await firebaseService.initialize();
+
+                            // Write all data to Firebase
+                            await firebaseService.saveCelebrities(celebrities);
+                            await firebaseService.saveBlogs(blogs);
+                            await firebaseService.saveCustomPages(customPages);
+                            await firebaseService.savePageContents(pageContents);
+
+                            showToastMessage('✓ Firebase Database initialized successfully! All your data is now synced.', 'success');
+                          } catch (error: any) {
+                            console.error('Firebase init error:', error);
+                            showToastMessage(`✗ Failed: ${error.message || 'Check console for details'}`, 'error');
+                          }
+                        }}
+                        className="px-6 py-3 bg-green-500/20 text-green-400 rounded-lg font-medium hover:bg-green-500/30 transition-colors flex items-center"
+                      >
+                        <i className="fas fa-database mr-2"></i>Initialize Database with Current Data
+                      </button>
+                      <p className="text-xs text-slate-400">
+                        This will sync all your celebrities, blogs, and pages to Firebase in one click.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Data Export/Import Section - Only show when Firebase is disabled */}
                 {!firebaseEnabled && (
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
