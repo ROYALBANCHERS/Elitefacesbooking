@@ -1,6 +1,13 @@
 /**
  * Firebase Configuration
  * Replace with your actual Firebase config from Firebase Console
+ *
+ * HOW TO GET YOUR CONFIG:
+ * 1. Go to https://console.firebase.google.com/
+ * 2. Create a new project
+ * 3. Click the web app icon (</>) to add an app
+ * 4. Copy the firebaseConfig object
+ * 5. Paste it below replacing the placeholder values
  */
 
 export const firebaseConfig = {
@@ -12,6 +19,8 @@ export const firebaseConfig = {
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
+
+// After pasting your config, delete the old lines above and keep only your config
 
 /**
  * Instructions to get your Firebase config:
