@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // Agar Vercel par hai toh '/', agar GitHub Pages par toh '/Elitefacesbooking/'
-    base: mode === 'production' && !process.env.VERCEL ? '/Elitefacesbooking/' : '/',
+    // For Vercel: always use '/', for GitHub Pages use '/Elitefacesbooking/'
+    base: '/',
 
     plugins: [react()],
 
