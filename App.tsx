@@ -26,6 +26,7 @@ import ArticleDetail from './components/ArticleDetail';
 import CustomPage from './components/CustomPage';
 import BlogListingPage from './components/BlogListingPage';
 import BlogDetailPage from './components/BlogDetailPage';
+import { firebaseService } from './services/FirebaseService';
 
 const HomePage: React.FC = () => {
   const { theme, toggleTheme, isDark } = useTheme();
@@ -36,6 +37,8 @@ const HomePage: React.FC = () => {
   const [showAllCelebrities, setShowAllCelebrities] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [adminClickCount, setAdminClickCount] = useState(0);
+  const [firebaseEnabled, setFirebaseEnabled] = useState(false);
+  const [loadingFirebase, setLoadingFirebase] = useState(true);
 
   // Secret admin access - click logo 5 times
   const handleLogoClick = () => {
@@ -56,7 +59,7 @@ const HomePage: React.FC = () => {
     return !localStorage.getItem('elitefaces_welcome_dismissed');
   });
 
-  // Load celebrities from localStorage if available, otherwise use CELEBRITIES constant
+  // Load celebrities - start with localStorage/defaults, then Firebase if available
   const [celebrities, setCelebrities] = useState<Celebrity[]>(() => {
     const saved = localStorage.getItem('elitefaces_celebrities');
     return saved ? JSON.parse(saved) : CELEBRITIES;
@@ -74,6 +77,71 @@ const HomePage: React.FC = () => {
   });
 
   const { navigateTo } = useRouter();
+
+  // Initialize Firebase and load data
+  useEffect(() => {
+    const initFirebase = async () => {
+      // Check if Firebase is configured
+      if (!firebaseService.isConfigured()) {
+        setLoadingFirebase(false);
+        return;
+      }
+
+      try {
+        setFirebaseEnabled(true);
+        await firebaseService.initialize();
+
+        // Fetch initial data
+        const data = await firebaseService.fetchAllData();
+
+        if (data.celebrities.length > 0) {
+          setCelebrities(data.celebrities);
+          localStorage.setItem('elitefaces_celebrities', JSON.stringify(data.celebrities));
+        }
+
+        if (data.blogs.length > 0) {
+          localStorage.setItem('elitefaces_blogs', JSON.stringify(data.blogs));
+          const sections = Array.from(new Set(data.blogs.filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
+          setCustomSections(sections);
+        }
+
+        if (data.customPages.length > 0) {
+          localStorage.setItem('elitefaces_custom_pages', JSON.stringify(data.customPages));
+        }
+
+        // Listen for real-time updates
+        firebaseService.onDataChange((updatedData) => {
+          if (updatedData.celebrities.length > 0) {
+            setCelebrities(updatedData.celebrities);
+            localStorage.setItem('elitefaces_celebrities', JSON.stringify(updatedData.celebrities));
+          }
+
+          if (updatedData.blogs.length > 0) {
+            localStorage.setItem('elitefaces_blogs', JSON.stringify(updatedData.blogs));
+            const sections = Array.from(new Set(updatedData.blogs.filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
+            setCustomSections(sections);
+          }
+
+          if (updatedData.customPages.length > 0) {
+            localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updatedData.customPages));
+          }
+        });
+
+        setLoadingFirebase(false);
+      } catch (error) {
+        console.error('Firebase initialization failed:', error);
+        setFirebaseEnabled(false);
+        setLoadingFirebase(false);
+      }
+    };
+
+    initFirebase();
+
+    // Cleanup listener on unmount
+    return () => {
+      firebaseService.detachListeners();
+    };
+  }, []);
 
   // Memoized callbacks to prevent unnecessary re-renders
   const handleBookCelebrity = useCallback((celeb: Celebrity) => {

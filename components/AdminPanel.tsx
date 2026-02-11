@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Celebrity, BlogPost, CustomPageData, BlogPlacement, HomepagePosition } from '../types';
 import { useTheme } from '../ThemeContext';
 import { dataService } from '../services/DataService';
+import { firebaseService } from '../services/FirebaseService';
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
@@ -46,6 +47,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   const [selectedPageSection, setSelectedPageSection] = useState('all');
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Firebase state
+  const [firebaseEnabled, setFirebaseEnabled] = useState(false);
+  const [savingToFirebase, setSavingToFirebase] = useState(false);
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedBlogs = localStorage.getItem('elitefaces_blogs');
@@ -70,6 +75,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       setPageContents(defaultContents);
       localStorage.setItem('elitefaces_page_contents', JSON.stringify(defaultContents));
     }
+
+    // Initialize Firebase
+    const initFirebase = async () => {
+      if (firebaseService.isConfigured()) {
+        setFirebaseEnabled(true);
+        try {
+          await firebaseService.initialize();
+          const data = await firebaseService.fetchAllData();
+          if (data.blogs.length > 0) setBlogPosts(data.blogs);
+          if (data.customPages.length > 0) setCustomPages(data.customPages);
+        } catch (error) {
+          console.error('Firebase init failed:', error);
+        }
+      }
+    };
+    initFirebase();
   }, []);
 
   useEffect(() => {
@@ -82,6 +103,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
       }
     }
   }, []);
+
+  // Save to Firebase helper function
+  const saveToFirebase = async () => {
+    if (!firebaseEnabled) return false;
+
+    try {
+      setSavingToFirebase(true);
+      await Promise.all([
+        firebaseService.saveCelebrities(celebrityList),
+        firebaseService.saveBlogs(blogPosts),
+        firebaseService.saveCustomPages(customPages),
+        firebaseService.savePageContents(pageContents)
+      ]);
+      setSavingToFirebase(false);
+      return true;
+    } catch (error) {
+      console.error('Firebase save error:', error);
+      setSavingToFirebase(false);
+      return false;
+    }
+  };
 
   const showToastMessage = (message: string, type: 'success' | 'error') => {
     setToastMessage(message);
@@ -153,17 +195,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCelebrity(celebrity);
   };
 
-  const handleDeleteCelebrity = (id: string) => {
+  const handleDeleteCelebrity = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this celebrity?')) {
       const updated = celebrityList.filter(c => c.id !== id);
       setCelebrityList(updated);
       onUpdateCelebrities(updated);
-      dataService.setCelebrities(updated); // Save to DataService
-      showToastMessage('Celebrity deleted! Click "Publish" to make changes live.', 'success');
+      dataService.setCelebrities(updated);
+
+      if (firebaseEnabled) {
+        setSavingToFirebase(true);
+        try {
+          await firebaseService.saveCelebrities(updated);
+          showToastMessage('Celebrity deleted & synced to Firebase!', 'success');
+        } catch (error) {
+          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
+        }
+        setSavingToFirebase(false);
+      } else {
+        showToastMessage('Celebrity deleted! Click "Publish" to make changes live.', 'success');
+      }
     }
   };
 
-  const handleSaveCelebrity = (e: React.FormEvent) => {
+  const handleSaveCelebrity = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCelebrity) return;
 
@@ -172,9 +226,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setCelebrityList(updated);
     onUpdateCelebrities(updated);
-    dataService.setCelebrities(updated); // Save to DataService
+    dataService.setCelebrities(updated);
+
+    // Save to Firebase if enabled
+    if (firebaseEnabled) {
+      setSavingToFirebase(true);
+      try {
+        await firebaseService.saveCelebrities(updated);
+        showToastMessage('Celebrity updated & synced to Firebase! Live for all users.', 'success');
+      } catch (error) {
+        showToastMessage('Saved locally! Firebase sync failed.', 'error');
+      }
+      setSavingToFirebase(false);
+    } else {
+      showToastMessage('Celebrity updated! Click "Publish" to make changes live.', 'success');
+    }
     setEditingCelebrity(null);
-    showToastMessage('Celebrity updated! Click "Publish" button to make changes live for all users.', 'success');
   };
 
   const handleAddCelebrity = () => {
@@ -228,17 +295,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingBlog(blog);
   };
 
-  const handleDeleteBlog = (id: string) => {
+  const handleDeleteBlog = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       const updated = blogPosts.filter(b => b.id !== id);
       setBlogPosts(updated);
       localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
-      dataService.setBlogs(updated); // Save to DataService
-      showToastMessage('Blog deleted! Click "Publish" to make changes live.', 'success');
+      dataService.setBlogs(updated);
+
+      if (firebaseEnabled) {
+        setSavingToFirebase(true);
+        try {
+          await firebaseService.saveBlogs(updated);
+          showToastMessage('Blog deleted & synced to Firebase!', 'success');
+        } catch (error) {
+          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
+        }
+        setSavingToFirebase(false);
+      } else {
+        showToastMessage('Blog deleted! Click "Publish" to make changes live.', 'success');
+      }
     }
   };
 
-  const handleSaveBlog = (e: React.FormEvent) => {
+  const handleSaveBlog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBlog) return;
 
@@ -247,9 +326,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setBlogPosts(updated);
     localStorage.setItem('elitefaces_blogs', JSON.stringify(updated));
-    dataService.setBlogs(updated); // Save to DataService
+    dataService.setBlogs(updated);
+
+    if (firebaseEnabled) {
+      setSavingToFirebase(true);
+      try {
+        await firebaseService.saveBlogs(updated);
+        showToastMessage('Blog saved & synced to Firebase! Live for all users.', 'success');
+      } catch (error) {
+        showToastMessage('Saved locally! Firebase sync failed.', 'error');
+      }
+      setSavingToFirebase(false);
+    } else {
+      showToastMessage('Blog saved! Click "Publish" to make it live for all users.', 'success');
+    }
     setEditingBlog(null);
-    showToastMessage('Blog saved! Click "Publish" to make it live for all users.', 'success');
   };
 
   const updateBlogField = (field: keyof BlogPost, value: any) => {
@@ -283,17 +374,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCustomPage(page);
   };
 
-  const handleDeleteCustomPage = (id: string) => {
+  const handleDeleteCustomPage = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
       const updated = customPages.filter(p => p.id !== id);
       setCustomPages(updated);
       localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
-      dataService.setCustomPages(updated); // Save to DataService
-      showToastMessage('Page deleted! Click "Publish" to make changes live.', 'success');
+      dataService.setCustomPages(updated);
+
+      if (firebaseEnabled) {
+        setSavingToFirebase(true);
+        try {
+          await firebaseService.saveCustomPages(updated);
+          showToastMessage('Page deleted & synced to Firebase!', 'success');
+        } catch (error) {
+          showToastMessage('Deleted locally! Firebase sync failed.', 'error');
+        }
+        setSavingToFirebase(false);
+      } else {
+        showToastMessage('Page deleted! Click "Publish" to make changes live.', 'success');
+      }
     }
   };
 
-  const handleSaveCustomPage = (e: React.FormEvent) => {
+  const handleSaveCustomPage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCustomPage) return;
 
@@ -302,9 +405,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     );
     setCustomPages(updated);
     localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updated));
-    dataService.setCustomPages(updated); // Save to DataService
+    dataService.setCustomPages(updated);
+
+    if (firebaseEnabled) {
+      setSavingToFirebase(true);
+      try {
+        await firebaseService.saveCustomPages(updated);
+        showToastMessage('Page saved & synced to Firebase! Live for all users.', 'success');
+      } catch (error) {
+        showToastMessage('Saved locally! Firebase sync failed.', 'error');
+      }
+      setSavingToFirebase(false);
+    } else {
+      showToastMessage('Page saved! Click "Publish" to make it live for all users.', 'success');
+    }
     setEditingCustomPage(null);
-    showToastMessage('Page saved! Click "Publish" to make it live for all users.', 'success');
   };
 
   const updateCustomPageField = (field: keyof CustomPageData, value: any) => {
@@ -452,31 +567,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               </div>
               <div>
                 <h2 className="text-xl font-bold">Admin Panel</h2>
-                <p className="text-slate-400 text-sm">Manage all content & settings</p>
+                <div className="flex items-center space-x-2">
+                  <p className="text-slate-400 text-sm">Manage all content & settings</p>
+                  {/* Firebase Status Indicator */}
+                  {firebaseEnabled ? (
+                    <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded-full flex items-center">
+                      <i className="fas fa-fire mr-1"></i>Firebase Live
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 bg-slate-500/20 text-slate-400 text-xs rounded-full flex items-center">
+                      <i className="fas fa-database mr-1"></i>Local Only
+                    </span>
+                  )}
+                  {savingToFirebase && (
+                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full flex items-center">
+                      <i className="fas fa-spinner fa-spin mr-1"></i>Saving...
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {/* Publish to Live Button - NEW */}
-              <button
-                onClick={() => {
-                  const dataStr = dataService.exportData();
-                  const blob = new Blob([dataStr], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `elitefaces-data-${new Date().toISOString().split('T')[0]}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                  showToastMessage('Data exported! Replace data.json in project and commit to GitHub.', 'success');
-                }}
-                className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors flex items-center"
-                title="Download data to publish changes for all users"
-              >
-                <i className="fas fa-cloud-upload-alt mr-2"></i>
-                <span className="hidden sm:inline">Publish</span>
-              </button>
+              {/* Firebase is disabled - show publish button */}
+              {!firebaseEnabled && (
+                <button
+                  onClick={() => {
+                    const dataStr = dataService.exportData();
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `elitefaces-data-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToastMessage('Data exported! Replace data.json in project and commit to GitHub.', 'success');
+                  }}
+                  className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors flex items-center"
+                  title="Download data to publish changes for all users"
+                >
+                  <i className="fas fa-cloud-upload-alt mr-2"></i>
+                  <span className="hidden sm:inline">Publish</span>
+                </button>
+              )}
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -1120,29 +1254,75 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
 
-                {/* Data Export/Import Section - NEW */}
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
-                  <h4 className="font-semibold mb-4 text-yellow-500">
-                    <i className="fas fa-cloud-upload-alt mr-2"></i>Publish Changes to Live Site
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="bg-yellow-500/5 rounded-lg p-4 border border-yellow-500/20">
-                      <p className="text-sm text-yellow-200 mb-2">
-                        <i className="fas fa-info-circle mr-2"></i>
-                        <strong>Important:</strong> To make your changes visible to all users, you need to export the data and commit it to GitHub.
+                {/* Firebase Status Section - NEW */}
+                {firebaseEnabled ? (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 text-orange-500">
+                      <i className="fas fa-fire mr-2"></i>Firebase Real-time Sync - ENABLED
+                    </h4>
+                    <div className="space-y-3">
+                      <p className="text-sm text-orange-200">
+                        <i className="fas fa-check-circle mr-2 text-green-400"></i>
+                        <strong>Live Sync Active:</strong> All your changes are automatically synced to Firebase and visible to all users in real-time!
                       </p>
-                      <ol className="text-xs text-yellow-200/80 space-y-1 ml-6 list-decimal">
-                        <li>Click "Export Data" below to download the data file</li>
-                        <li>Replace the <code className="bg-black/30 px-1 rounded">data.json</code> file in your project with the downloaded file</li>
-                        <li>Commit and push the changes to GitHub</li>
-                        <li>GitHub Actions will automatically deploy the changes</li>
-                      </ol>
+                      <p className="text-xs text-orange-200/70">
+                        When you save celebrities, blogs, or pages, they are immediately available to all visitors. No need to export or deploy.
+                      </p>
                     </div>
+                  </div>
+                ) : (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 text-blue-500">
+                      <i className="fas fa-database mr-2"></i>Enable Firebase Real-time Sync
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="bg-blue-500/5 rounded-lg p-4 border border-blue-500/20">
+                        <p className="text-sm text-blue-200 mb-3">
+                          <i className="fas fa-bolt mr-2 text-yellow-400"></i>
+                          <strong>Why enable Firebase?</strong> Make admin changes live instantly for all users without deploying!
+                        </p>
+                        <ol className="text-xs text-blue-200/80 space-y-2 ml-6 list-decimal">
+                          <li>Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-yellow-400 underline">Firebase Console</a></li>
+                          <li>Create a new project (or use existing)</li>
+                          <li>Go to Project Settings &gt; General &gt; Your apps &gt; Web app</li>
+                          <li>Copy the config object</li>
+                          <li>Paste it in <code className="bg-black/30 px-1 rounded">firebase.ts</code> in your project</li>
+                          <li>Enable Realtime Database from Build menu</li>
+                          <li>Deploy the updated code</li>
+                        </ol>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        <i className="fas fa-info-circle mr-1"></i>
+                        Firebase is free for up to 1GB database storage and 10GB/month bandwidth.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-                    <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => {
-                          const dataStr = dataService.exportData();
+                {/* Data Export/Import Section - Only show when Firebase is disabled */}
+                {!firebaseEnabled && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
+                    <h4 className="font-semibold mb-4 text-yellow-500">
+                      <i className="fas fa-cloud-upload-alt mr-2"></i>Publish Changes to Live Site
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="bg-yellow-500/5 rounded-lg p-4 border border-yellow-500/20">
+                        <p className="text-sm text-yellow-200 mb-2">
+                          <i className="fas fa-info-circle mr-2"></i>
+                          <strong>Important:</strong> To make your changes visible to all users, you need to export the data and commit it to GitHub.
+                        </p>
+                        <ol className="text-xs text-yellow-200/80 space-y-1 ml-6 list-decimal">
+                          <li>Click "Export Data" below to download the data file</li>
+                          <li>Replace the <code className="bg-black/30 px-1 rounded">data.json</code> file in your project with the downloaded file</li>
+                          <li>Commit and push the changes to GitHub</li>
+                          <li>GitHub Actions will automatically deploy the changes</li>
+                        </ol>
+                      </div>
+
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          onClick={() => {
+                            const dataStr = dataService.exportData();
                           const blob = new Blob([dataStr], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
@@ -1187,6 +1367,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                     </div>
                   </div>
                 </div>
+                )}
 
                 <div className="bg-slate-900/50 border border-white/10 rounded-xl p-6">
                   <h4 className="font-semibold mb-4">Cache Management</h4>
