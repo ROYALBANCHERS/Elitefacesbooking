@@ -1,26 +1,18 @@
 /**
  * Firebase Configuration
- * Replace with your actual Firebase config from Firebase Console
- *
- * HOW TO GET YOUR CONFIG:
- * 1. Go to https://console.firebase.google.com/
- * 2. Create a new project
- * 3. Click the web app icon (</>) to add an app
- * 4. Copy the firebaseConfig object
- * 5. Paste it below replacing the placeholder values
+ * Connected to: elitefacesbooking023
  */
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyANlRkCOY_yf54mZ5MkHd3tZkh_IpNKw_E",
+  authDomain: "elitefacesbooking023.firebaseapp.com",
+  databaseURL: "https://elitefacesbooking023-default-rtdb.firebaseio.com",
+  projectId: "elitefacesbooking023",
+  storageBucket: "elitefacesbooking023.firebasestorage.app",
+  messagingSenderId: "981925662056",
+  appId: "1:981925662056:web:acc05984db1a47a32d1add",
+  measurementId: "G-ZV9GHTZWMM"
 };
-
-// After pasting your config, delete the old lines above and keep only your config
 
 /**
  * Instructions to get your Firebase config:
