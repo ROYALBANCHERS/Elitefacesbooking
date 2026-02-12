@@ -9,7 +9,7 @@ import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
 import SharedFooter from './components/SharedFooter';
-import { RouterProvider, useRouter } from './components/Router';
+import { RouterProvider, useRouter, Page } from './components/Router';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
@@ -94,37 +94,25 @@ const HomePage: React.FC = () => {
         // Fetch initial data
         const data = await firebaseService.fetchAllData();
 
-        if (data.celebrities.length > 0) {
-          setCelebrities(data.celebrities);
-          localStorage.setItem('elitefaces_celebrities', JSON.stringify(data.celebrities));
-        }
+        setCelebrities(data.celebrities || []);
+        localStorage.setItem('elitefaces_celebrities', JSON.stringify(data.celebrities || []));
 
-        if (data.blogs.length > 0) {
-          localStorage.setItem('elitefaces_blogs', JSON.stringify(data.blogs));
-          const sections = Array.from(new Set(data.blogs.filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
-          setCustomSections(sections);
-        }
+        localStorage.setItem('elitefaces_blogs', JSON.stringify(data.blogs || []));
+        const sections = Array.from(new Set((data.blogs || []).filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
+        setCustomSections(sections);
 
-        if (data.customPages.length > 0) {
-          localStorage.setItem('elitefaces_custom_pages', JSON.stringify(data.customPages));
-        }
+        localStorage.setItem('elitefaces_custom_pages', JSON.stringify(data.customPages || []));
 
         // Listen for real-time updates
         firebaseService.onDataChange((updatedData) => {
-          if (updatedData.celebrities.length > 0) {
-            setCelebrities(updatedData.celebrities);
-            localStorage.setItem('elitefaces_celebrities', JSON.stringify(updatedData.celebrities));
-          }
+          setCelebrities(updatedData.celebrities || []);
+          localStorage.setItem('elitefaces_celebrities', JSON.stringify(updatedData.celebrities || []));
 
-          if (updatedData.blogs.length > 0) {
-            localStorage.setItem('elitefaces_blogs', JSON.stringify(updatedData.blogs));
-            const sections = Array.from(new Set(updatedData.blogs.filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
-            setCustomSections(sections);
-          }
+          localStorage.setItem('elitefaces_blogs', JSON.stringify(updatedData.blogs || []));
+          const sections = Array.from(new Set((updatedData.blogs || []).filter((b: BlogPost) => b.published !== false).map((b: BlogPost) => b.section)));
+          setCustomSections(sections);
 
-          if (updatedData.customPages.length > 0) {
-            localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updatedData.customPages));
-          }
+          localStorage.setItem('elitefaces_custom_pages', JSON.stringify(updatedData.customPages || []));
         });
 
         setLoadingFirebase(false);

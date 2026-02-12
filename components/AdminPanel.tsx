@@ -50,6 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   // Firebase state
   const [firebaseEnabled, setFirebaseEnabled] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [, setSavingToFirebase] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -83,8 +84,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
         try {
           await firebaseService.initialize();
           const data = await firebaseService.fetchAllData();
-          if (data.blogs.length > 0) setBlogPosts(data.blogs);
-          if (data.customPages.length > 0) setCustomPages(data.customPages);
+          setCelebrityList(data.celebrities || []);
+          onUpdateCelebrities(data.celebrities || []);
+          setBlogPosts(data.blogs || []);
+          setCustomPages(data.customPages || []);
+          setPageContents(data.pageContents || []);
         } catch (error) {
           console.error('Firebase init failed:', error);
         }
@@ -130,6 +134,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setToastType(type);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const runFirebaseSync = async (label: string, action: () => Promise<void>, successMessage: string) => {
+    if (!firebaseEnabled) return;
+
+    setSyncStatus('syncing');
+    showToastMessage(`${label} saved! Syncing to Firebase...`, 'success');
+
+    try {
+      await action();
+      setSyncStatus('success');
+      showToastMessage(successMessage, 'success');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+    } catch (error: any) {
+      setSyncStatus('error');
+      const errorMsg = error?.message || 'Unknown Firebase error';
+      console.error('Firebase sync failed:', errorMsg);
+      showToastMessage(`⚠ Firebase sync failed: ${errorMsg}`, 'error');
+      setTimeout(() => setSyncStatus('idle'), 3500);
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -234,23 +258,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCelebrity(null);
 
     if (firebaseEnabled) {
-      setSyncStatus('syncing');
-      showToastMessage('Celebrity saved! Syncing to Firebase...', 'success');
-
-      // Sync in background with proper error handling
-      firebaseService.saveCelebrities(updated)
-        .then(() => {
-          setSyncStatus('success');
-          setTimeout(() => setSyncStatus('idle'), 2000);
-          showToastMessage('✓ Synced to Firebase! Live for all users.', 'success');
-        })
-        .catch((error: Error) => {
-          setSyncStatus('error');
-          const errorMsg = error?.message || 'Unknown error';
-          console.error('Firebase sync failed:', errorMsg);
-          showToastMessage(`⚠ Firebase sync failed: ${errorMsg}`, 'error');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        });
+      runFirebaseSync('Celebrity', () => firebaseService.saveCelebrities(updated), '✓ Synced to Firebase! Live for all users.');
     } else {
       showToastMessage('Celebrity saved! Click "Publish" to make changes live.', 'success');
     }
@@ -338,20 +346,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingBlog(null);
 
     if (firebaseEnabled) {
-      setSyncStatus('syncing');
-      showToastMessage('Blog saved! Syncing to Firebase...', 'success');
-      firebaseService.saveBlogs(updated)
-        .then(() => {
-          setSyncStatus('success');
-          setTimeout(() => setSyncStatus('idle'), 2000);
-          showToastMessage('✓ Blog synced to Firebase!', 'success');
-        })
-        .catch((error) => {
-          setSyncStatus('error');
-          console.error('Firebase sync failed:', error);
-          showToastMessage('⚠ Saved locally only. Check console.', 'error');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        });
+      runFirebaseSync('Blog', () => firebaseService.saveBlogs(updated), '✓ Blog synced to Firebase!');
     } else {
       showToastMessage('Blog saved! Click "Publish" to make it live for all users.', 'success');
     }
@@ -418,20 +413,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
     setEditingCustomPage(null);
 
     if (firebaseEnabled) {
-      setSyncStatus('syncing');
-      showToastMessage('Page saved! Syncing to Firebase...', 'success');
-      firebaseService.saveCustomPages(updated)
-        .then(() => {
-          setSyncStatus('success');
-          setTimeout(() => setSyncStatus('idle'), 2000);
-          showToastMessage('✓ Page synced to Firebase!', 'success');
-        })
-        .catch((error) => {
-          setSyncStatus('error');
-          console.error('Firebase sync failed:', error);
-          showToastMessage('⚠ Saved locally only. Check console.', 'error');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        });
+      runFirebaseSync('Page', () => firebaseService.saveCustomPages(updated), '✓ Page synced to Firebase!');
     } else {
       showToastMessage('Page saved! Click "Publish" to make it live for all users.', 'success');
     }
@@ -1320,6 +1302,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
                       <p className="text-xs text-slate-400">
                         <i className="fas fa-info-circle mr-1"></i>
                         Firebase is free for up to 1GB database storage and 10GB/month bandwidth.
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        <i className="fas fa-shield-alt mr-1"></i>
+                        For stable live sync, apply the rules from <code className="bg-black/30 px-1 rounded">FIREBASE_RULES.md</code>.
                       </p>
                     </div>
                   </div>
