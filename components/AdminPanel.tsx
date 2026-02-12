@@ -50,6 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onUpdateCelebrities, c
   // Firebase state
   const [firebaseEnabled, setFirebaseEnabled] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [, setSavingToFirebase] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {

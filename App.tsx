@@ -9,7 +9,7 @@ import WelcomeModal from './components/WelcomeModal';
 import BlogMenu from './components/BlogMenu';
 import AdminPanel from './components/AdminPanel';
 import SharedFooter from './components/SharedFooter';
-import { RouterProvider, useRouter } from './components/Router';
+import { RouterProvider, useRouter, Page } from './components/Router';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import OurServices from './components/pages/OurServices';
