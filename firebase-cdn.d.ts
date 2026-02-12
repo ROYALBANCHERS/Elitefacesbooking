@@ -10,4 +10,5 @@ declare module 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js' 
   export const update: (...args: any[]) => any;
   export const remove: (...args: any[]) => any;
   export const onValue: (...args: any[]) => any;
+  export const off: (...args: any[]) => any;
 }

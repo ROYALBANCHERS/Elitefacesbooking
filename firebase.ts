@@ -6,7 +6,9 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyANlRkCOY_yf54mZ5MkHd3tZkh_IpNKw_E",
   authDomain: "elitefacesbooking023.firebaseapp.com",
-  databaseURL: "https://elitefacesbooking023-default-rtdb.firebaseio.com",
+  // NOTE: This project is hosted in asia-southeast1, so use the regional RTDB URL.
+  // Using the legacy firebaseio URL can cause inconsistent behavior in some environments.
+  databaseURL: "https://elitefacesbooking023-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "elitefacesbooking023",
   storageBucket: "elitefacesbooking023.firebasestorage.app",
   messagingSenderId: "981925662056",
@@ -35,32 +37,10 @@ export const firebaseConfig = {
 /**
  * Security Rules for Realtime Database
  *
- * Go to Firebase Console > Realtime Database > Rules and paste:
+ * For exact production-safe rules (public read + admin-only write), see:
+ * - FIREBASE_RULES.md
  *
- * {
- *   "rules": {
- *     ".read": true,
- *     ".write": false,
- *     "celebrities": {
- *       ".read": true,
- *       ".write": "auth != null"
- *     },
- *     "blogs": {
- *       ".read": true,
- *       ".write": "auth != null"
- *     },
- *     "customPages": {
- *       ".read": true,
- *       ".write": "auth != null"
- *     },
- *     "pageContents": {
- *       ".read": true,
- *       ".write": "auth != null"
- *     }
- *   }
- * }
- *
- * For testing, you can use:
+ * Quick debug rules (temporary only):
  * {
  *   "rules": {
  *     ".read": true,

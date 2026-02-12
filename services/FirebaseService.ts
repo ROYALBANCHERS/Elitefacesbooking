@@ -19,7 +19,9 @@ interface DataContent {
 }
 
 class FirebaseService {
-  private listeners: Map<string, any> = new Map();
+  private listeners: Map<string, () => void> = new Map();
+  private readonly REQUEST_TIMEOUT_MS = 12000;
+
   private cache: DataContent = {
     celebrities: [],
     blogs: [],
@@ -27,6 +29,15 @@ class FirebaseService {
     pageContents: [],
     lastUpdated: null
   };
+
+  private async withTimeout<T>(promise: Promise<T>, action: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        setTimeout(() => reject(new Error(`${action} timed out after ${this.REQUEST_TIMEOUT_MS / 1000}s`)), this.REQUEST_TIMEOUT_MS);
+      })
+    ]);
+  }
 
   /**
    * Initialize Firebase
@@ -39,7 +50,7 @@ class FirebaseService {
 
       // Load Firebase SDKs dynamically
       const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-      const { getDatabase, ref, set, get, update, remove, onValue } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+      const { getDatabase, ref, set, get, remove, onValue, off } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
 
       console.log('✓ Firebase SDKs loaded');
 
@@ -54,15 +65,22 @@ class FirebaseService {
       (this as any).ref = ref;
       (this as any).set = set;
       (this as any).get = get;
-      (this as any).update = update;
       (this as any).remove = remove;
       (this as any).onValue = onValue;
+      (this as any).off = off;
 
       return true;
     } catch (error: any) {
       console.error('❌ Firebase initialization error:', error?.message || error);
-      alert('Firebase Error: ' + (error?.message || 'Failed to connect. Check console.'));
       return false;
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (initialized) return;
+    const ok = await this.initialize();
+    if (!ok || !database) {
+      throw new Error('Firebase initialization failed. Please verify firebase.ts config and Realtime Database rules.');
     }
   }
 
@@ -70,7 +88,7 @@ class FirebaseService {
    * Check if Firebase is properly configured
    */
   isConfigured(): boolean {
-    return firebaseConfig.apiKey !== "YOUR_API_KEY";
+    return firebaseConfig.apiKey !== 'YOUR_API_KEY';
   }
 
   /**
@@ -91,12 +109,10 @@ class FirebaseService {
       throw new Error('Firebase not configured. Please update firebase.ts with your config.');
     }
 
-    if (!initialized) {
-      await this.initialize();
-    }
+    await this.ensureInitialized();
 
     try {
-      const snapshot = await (this as any).get(this.db('/'));
+      const snapshot: any = await this.withTimeout((this as any).get(this.db('/')), 'Fetching Firebase data');
       if (snapshot.exists()) {
         const data = snapshot.val();
         this.cache = {
@@ -106,7 +122,6 @@ class FirebaseService {
           pageContents: data.pageContents || [],
           lastUpdated: data.lastUpdated || null
         };
-        return this.cache;
       }
       return this.cache;
     } catch (error) {
@@ -119,54 +134,62 @@ class FirebaseService {
    * Listen to real-time updates
    */
   onDataChange(callback: (data: DataContent) => void): void {
-    if (!initialized) {
-      this.initialize().then(() => this.attachListener(callback));
-    } else {
-      this.attachListener(callback);
-    }
+    this.ensureInitialized()
+      .then(() => this.attachListener(callback))
+      .catch((error) => {
+        console.error('❌ Failed to attach Firebase listener:', error);
+      });
   }
 
   private attachListener(callback: (data: DataContent) => void): void {
-    const listener = (this as any).onValue(this.db('/'), (snapshot: any) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const updatedData: DataContent = {
-          celebrities: data.celebrities || [],
-          blogs: data.blogs || [],
-          customPages: data.customPages || [],
-          pageContents: data.pageContents || [],
-          lastUpdated: data.lastUpdated || null
-        };
-        this.cache = updatedData;
-        callback(updatedData);
-      }
-    });
+    // Clean old global listener before attaching a new one
+    this.detachListeners();
 
-    this.listeners.set('global', listener);
+    const rootRef = this.db('/');
+    const listener = (snapshot: any) => {
+      const data = snapshot?.exists?.() ? snapshot.val() : {};
+      const updatedData: DataContent = {
+        celebrities: data.celebrities || [],
+        blogs: data.blogs || [],
+        customPages: data.customPages || [],
+        pageContents: data.pageContents || [],
+        lastUpdated: data.lastUpdated || null
+      };
+      this.cache = updatedData;
+      callback(updatedData);
+    };
+
+    (this as any).onValue(rootRef, listener);
+    this.listeners.set('global', () => (this as any).off(rootRef, 'value', listener));
   }
 
   /**
    * Remove all listeners
    */
   detachListeners(): void {
-    this.listeners.forEach((listener, key) => {
-      // Firebase listeners auto-cleanup when component unmounts
+    this.listeners.forEach((unsubscribe) => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.warn('Failed to detach Firebase listener:', error);
+      }
     });
     this.listeners.clear();
+  }
+
+  private async setPath(path: string, value: unknown, label: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.withTimeout((this as any).set(this.db(path), value), label);
+    await this.withTimeout((this as any).set(this.db('/lastUpdated'), new Date().toISOString()), 'Updating Firebase timestamp');
   }
 
   /**
    * Save celebrities
    */
   async saveCelebrities(celebrities: Celebrity[]): Promise<void> {
-    if (!initialized) await this.initialize();
-
     try {
       console.log('💾 Saving', celebrities.length, 'celebrities to Firebase...');
-      await (this as any).update(this.db('/'), {
-        celebrities,
-        lastUpdated: new Date().toISOString()
-      });
+      await this.setPath('/celebrities', celebrities, 'Saving celebrities');
       console.log('✓ Celebrities saved to Firebase');
     } catch (error: any) {
       console.error('❌ Error saving celebrities:', error?.message || error);
@@ -178,14 +201,9 @@ class FirebaseService {
    * Save blogs
    */
   async saveBlogs(blogs: BlogPost[]): Promise<void> {
-    if (!initialized) await this.initialize();
-
     try {
       console.log('💾 Saving', blogs.length, 'blogs to Firebase...');
-      await (this as any).update(this.db('/'), {
-        blogs,
-        lastUpdated: new Date().toISOString()
-      });
+      await this.setPath('/blogs', blogs, 'Saving blogs');
       console.log('✓ Blogs saved to Firebase');
     } catch (error: any) {
       console.error('❌ Error saving blogs:', error?.message || error);
@@ -197,14 +215,9 @@ class FirebaseService {
    * Save custom pages
    */
   async saveCustomPages(pages: CustomPageData[]): Promise<void> {
-    if (!initialized) await this.initialize();
-
     try {
       console.log('💾 Saving', pages.length, 'custom pages to Firebase...');
-      await (this as any).update(this.db('/'), {
-        customPages: pages,
-        lastUpdated: new Date().toISOString()
-      });
+      await this.setPath('/customPages', pages, 'Saving custom pages');
       console.log('✓ Custom pages saved to Firebase');
     } catch (error: any) {
       console.error('❌ Error saving custom pages:', error?.message || error);
@@ -216,14 +229,9 @@ class FirebaseService {
    * Save page contents
    */
   async savePageContents(contents: Array<{ id: string; title: string; content: string; section: string; imageUrl?: string }>): Promise<void> {
-    if (!initialized) await this.initialize();
-
     try {
       console.log('💾 Saving page contents to Firebase...');
-      await (this as any).update(this.db('/'), {
-        pageContents: contents,
-        lastUpdated: new Date().toISOString()
-      });
+      await this.setPath('/pageContents', contents, 'Saving page contents');
       console.log('✓ Page contents saved to Firebase');
     } catch (error: any) {
       console.error('❌ Error saving page contents:', error?.message || error);
